@@ -1,8 +1,12 @@
 package com.gexton.pink_uos;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
+import droidninja.filepicker.FilePickerBuilder;
+import droidninja.filepicker.FilePickerConst;
+import droidninja.filepicker.utils.ContentUriUtils;
 
 import android.Manifest;
 import android.app.Activity;
@@ -12,6 +16,7 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
@@ -26,6 +31,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -51,15 +57,16 @@ import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.loopj.android.http.RequestParams;
+import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 public class HomeActivity extends AppCompatActivity implements ApiCallback {
-    String message;
     double lat, lng;
     TextView tvLocation;
     TextView tvName;
@@ -79,6 +86,9 @@ public class HomeActivity extends AppCompatActivity implements ApiCallback {
     GPSTracker gpsTracker;
     String address1;
     File op;
+    final int CUSTOM_REQUEST_CODE = 987;
+    private ArrayList<Uri> photoPaths = new ArrayList<>();
+    String image_path;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,12 +115,10 @@ public class HomeActivity extends AppCompatActivity implements ApiCallback {
         btnProfile = findViewById(R.id.btnProfile);
 
         //Setting device volume to Max
-        //AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        //am.setStreamVolume(AudioManager.STREAM_MUSIC, am.getStreamMaxVolume(AudioManager.STREAM_MUSIC), 0);
+        AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        am.setStreamVolume(AudioManager.STREAM_MUSIC, am.getStreamMaxVolume(AudioManager.STREAM_MUSIC), 0);
 
-        //Create Media Player
         mediaPlayer = MediaPlayer.create(HomeActivity.this, R.raw.alert_tone);
-
         btnPlayRingtone.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -170,7 +178,6 @@ public class HomeActivity extends AppCompatActivity implements ApiCallback {
         tvLocation.setText(address1);
         tvName.setText("Name");
         tvPhone.setText("Phone No");
-        message = edtMessage.getText().toString().trim();
 
         alertDialogBuilder.setView(view);
         AlertDialog alertDialog = alertDialogBuilder.create();
@@ -187,26 +194,36 @@ public class HomeActivity extends AppCompatActivity implements ApiCallback {
         btnCaptureImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                dispatchTakePictureIntent();
+                //dispatchTakePictureIntent();
+                pickPhoto();
             }
         });
+
+        if (TextUtils.isEmpty(image_path)) {
+            image_path = "";
+        }
 
         btnSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Toast.makeText(HomeActivity.this, "Lat: " + gpsTracker.getLatitude() + "\nLng: " + gpsTracker.getLongitude(), Toast.LENGTH_SHORT).show();
                 RequestParams requestParams = new RequestParams();
                 requestParams.put("address", address1);
                 requestParams.put("lat", gpsTracker.getLatitude());
                 requestParams.put("lng", gpsTracker.getLongitude());
-                requestParams.put("msg", message);
+                requestParams.put("msg", edtMessage.getText().toString().trim());
+                requestParams.setUseJsonStreamer(true);
                 try {
-                    requestParams.put("image", op);
+                    File file = new File(image_path);
+                    requestParams.put("image", file);
+                    Log.d("image_path", "onClick: " + image_path);
+                    requestParams.setUseJsonStreamer(false);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
-                requestParams.setUseJsonStreamer(true);
                 ApiManager apiManager = new ApiManager(HomeActivity.this, "post", ApiManager.API_PANIC_REPORT, requestParams, apiCallback);
                 apiManager.loadURLPanicBuzz();
+                Toast.makeText(HomeActivity.this, "Msg: " + edtMessage.getText().toString().trim(), Toast.LENGTH_SHORT).show();
             }
         });
         alertDialog.show();
@@ -266,7 +283,7 @@ public class HomeActivity extends AppCompatActivity implements ApiCallback {
         }
     }
 
-    @Override
+    /* @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
@@ -286,11 +303,10 @@ public class HomeActivity extends AppCompatActivity implements ApiCallback {
             imageSelected.setVisibility(View.VISIBLE);
             imageSelected.setImageBitmap(BitmapFactory.decodeFile(imgFilePathTemp));
         }
-    }
+    }*/
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == MY_CAMERA_PERMISSION_CODE) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -316,6 +332,54 @@ public class HomeActivity extends AppCompatActivity implements ApiCallback {
     public void onApiResponce(int httpStatusCode, int successOrFail, String apiName, String apiResponce) {
         Toast.makeText(HomeActivity.this, "" + apiResponce, Toast.LENGTH_SHORT).show();
         Log.d("panic_buzz", "onApiResponce: " + apiResponce);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == CUSTOM_REQUEST_CODE && resultCode == Activity.RESULT_OK && data != null) {
+            ArrayList<Uri> dataList = data.getParcelableArrayListExtra(FilePickerConst.KEY_SELECTED_MEDIA);
+            if (dataList != null) {
+                photoPaths = new ArrayList<Uri>();
+                photoPaths.addAll(dataList);
+                try {
+                    image_path = ContentUriUtils.INSTANCE.getFilePath(HomeActivity.this, photoPaths.get(0));
+                    if (image_path != null) {
+                        op = new File(image_path);
+
+                        File file = new File(image_path);
+                        Picasso.get().load(file).into(imageSelected);
+                        btnCaptureImage.setVisibility(View.GONE);
+                        imageSelected.setVisibility(View.VISIBLE);
+                        System.out.println("-- file path " + op.getAbsolutePath());
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private void pickPhoto() {
+        FilePickerBuilder.getInstance()
+                .setMaxCount(1)
+                .setSelectedFiles(photoPaths)
+                .setActivityTheme(R.style.ThemeOverlay_AppCompat_Dark)
+                .setActivityTitle("Please select media")
+                .setImageSizeLimit(5)
+                .setVideoSizeLimit(10)
+                .setSpan(FilePickerConst.SPAN_TYPE.FOLDER_SPAN, 3)
+                .setSpan(FilePickerConst.SPAN_TYPE.DETAIL_SPAN, 4)
+                .enableVideoPicker(false)
+                .enableCameraSupport(true)
+                .showGifs(false)
+                .showFolderView(true)
+                .enableSelectAll(false)
+                .enableImagePicker(true)
+                .setCameraPlaceholder(R.drawable.ic_camera)
+                .withOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)
+                .pickPhoto(this, CUSTOM_REQUEST_CODE);
     }
 
     private void dispatchTakePictureIntent() {

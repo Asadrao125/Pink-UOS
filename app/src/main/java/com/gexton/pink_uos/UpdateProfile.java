@@ -5,13 +5,20 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 import de.hdodenhof.circleimageview.CircleImageView;
+import droidninja.filepicker.FilePickerBuilder;
+import droidninja.filepicker.FilePickerConst;
+import droidninja.filepicker.utils.ContentUriUtils;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Address;
+import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -27,6 +34,7 @@ import android.widget.Toast;
 import com.gexton.pink_uos.api.ApiCallback;
 import com.gexton.pink_uos.api.ApiManager;
 import com.gexton.pink_uos.model.LoginResponse;
+import com.gexton.pink_uos.utils.GPSTracker;
 import com.google.gson.Gson;
 import com.loopj.android.http.RequestParams;
 import com.squareup.picasso.Picasso;
@@ -36,8 +44,11 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class UpdateProfile extends AppCompatActivity implements ApiCallback {
     String MY_PREFS_NAME = "pink-uos";
@@ -46,17 +57,21 @@ public class UpdateProfile extends AppCompatActivity implements ApiCallback {
     CircleImageView profileImage;
     EditText edtFirstName, edtLastName, edtPhone;
     final int REQUEST_CODE_GALLERY = 999;
-    String imgFilePathTemp = "";
-    Uri outputFileUri;
     File op;
     ApiCallback apiCallback;
     String fName, lName, phoneNo;
     String emergency, fatherName;
+    final int CUSTOM_REQUEST_CODE = 987;
+    private ArrayList<Uri> photoPaths = new ArrayList<>();
+    String image_path;
+    String address, city, state, zipcode;
+    GPSTracker gpsTracker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_update_profile);
+
 
         imgBack = findViewById(R.id.imgBack);
         btnUpdate = findViewById(R.id.btnUpdate);
@@ -65,8 +80,22 @@ public class UpdateProfile extends AppCompatActivity implements ApiCallback {
         edtFirstName = findViewById(R.id.edtFirstName);
         edtLastName = findViewById(R.id.edtLastName);
         apiCallback = UpdateProfile.this;
+        gpsTracker = new GPSTracker(this);
 
         settingDataIntoFields();
+
+        Geocoder geocoder;
+        List<Address> addresses;
+        geocoder = new Geocoder(this, Locale.getDefault());
+        try {
+            addresses = geocoder.getFromLocation(gpsTracker.getLatitude(), gpsTracker.getLongitude(), 1);
+            address = addresses.get(0).getAddressLine(0);
+            city = addresses.get(0).getLocality();
+            state = addresses.get(0).getAdminArea();
+            zipcode = addresses.get(0).getPostalCode();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         imgBack.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -83,26 +112,32 @@ public class UpdateProfile extends AppCompatActivity implements ApiCallback {
                 lName = edtLastName.getText().toString().trim();
                 phoneNo = edtPhone.getText().toString().trim();
 
-                RequestParams requestParams = new RequestParams();
-                requestParams.put("first_name", fName);
-                requestParams.put("last_name", lName);
-                requestParams.put("phone_no", phoneNo);
-                requestParams.setUseJsonStreamer(true);
-                try {
-                    requestParams.put("profile_image", op);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
+                if (!TextUtils.isEmpty(fName) && !TextUtils.isEmpty(lName) && !TextUtils.isEmpty(phoneNo) && !TextUtils.isEmpty(image_path)) {
+                    RequestParams requestParams = new RequestParams();
+                    requestParams.put("first_name", fName);
+                    requestParams.put("last_name", lName);
+                    requestParams.put("address", address);
+                    requestParams.put("city", city);
+                    requestParams.put("state", state);
+                    requestParams.put("zipcode", zipcode);
+                    requestParams.put("phone_no", phoneNo);
+                    try {
+                        requestParams.put("profile_image", new File(image_path));
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                    requestParams.setUseJsonStreamer(true);
 
-                ApiManager apiManager = new ApiManager(UpdateProfile.this, "post", ApiManager.API_UPDATE_PROFILE, requestParams, apiCallback);
-                apiManager.loadURLPanicBuzz();
+                    ApiManager apiManager = new ApiManager(UpdateProfile.this, "post", ApiManager.API_UPDATE_PROFILE, requestParams, apiCallback);
+                    apiManager.loadURLPanicBuzz();
+                }
             }
         });
 
         profileImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                dispatchTakePictureIntent();
+                pickPhoto();
             }
         });
     }
@@ -127,39 +162,6 @@ public class UpdateProfile extends AppCompatActivity implements ApiCallback {
         }
     }
 
-    private void dispatchTakePictureIntent() {
-
-        long tim = System.currentTimeMillis();
-        String imgName = "image_" + tim + ".jpg";
-
-        File dir = getApplicationContext().getFilesDir();
-        File folder = new File(dir.getAbsolutePath() + "/images");
-        if (!folder.exists()) {
-            folder.mkdir();
-        }
-        op = new File(folder, imgName);
-
-        outputFileUri = FileProvider.getUriForFile(getApplicationContext(), getPackageName() + ".fileprovider", op);
-        imgFilePathTemp = op.getAbsolutePath();
-
-        Intent takePictureIntent = new Intent(Intent.ACTION_PICK);
-        takePictureIntent.setType("image/*");
-        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
-
-        //===============android19
-        List<ResolveInfo> resolvedIntentActivities = getPackageManager().queryIntentActivities(takePictureIntent, PackageManager.MATCH_DEFAULT_ONLY);
-        for (ResolveInfo resolvedIntentInfo : resolvedIntentActivities) {
-            String packageName = resolvedIntentInfo.activityInfo.packageName;
-            grantUriPermission(packageName, outputFileUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            //context.revokeUriPermissionfileUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        }
-        //==============android19
-
-        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            startActivityForResult(takePictureIntent, REQUEST_CODE_GALLERY);
-        }
-    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 
@@ -178,64 +180,52 @@ public class UpdateProfile extends AppCompatActivity implements ApiCallback {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == REQUEST_CODE_GALLERY && resultCode == RESULT_OK && data != null) {
-            Uri uri = data.getData();
+        if (requestCode == CUSTOM_REQUEST_CODE && resultCode == Activity.RESULT_OK && data != null) {
+            ArrayList<Uri> dataList = data.getParcelableArrayListExtra(FilePickerConst.KEY_SELECTED_MEDIA);
+            if (dataList != null) {
+                photoPaths = new ArrayList<Uri>();
+                photoPaths.addAll(dataList);
 
-            File destination = new File(Environment.getExternalStorageDirectory(), System.currentTimeMillis() + ".jpg");
-            Log.d("destination", "onActivityResult: " + destination);
-
-            try {
-                InputStream inputStream = getContentResolver().openInputStream(uri);
-                Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                profileImage.setImageBitmap(bitmap);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
+                try {
+                    image_path = ContentUriUtils.INSTANCE.getFilePath(UpdateProfile.this, photoPaths.get(0));
+                    if (image_path != null) {
+                        op = new File(image_path);
+                        Picasso.get().load(op).into(profileImage);
+                        System.out.println("-- file path " + op.getAbsolutePath());
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
-        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void pickPhoto() {
+        FilePickerBuilder.getInstance()
+                .setMaxCount(1)
+                .setSelectedFiles(photoPaths)
+                .setActivityTheme(R.style.ThemeOverlay_AppCompat_Dark)
+                .setActivityTitle("Please select media")
+                .setImageSizeLimit(5)
+                .setVideoSizeLimit(10)
+                .setSpan(FilePickerConst.SPAN_TYPE.FOLDER_SPAN, 3)
+                .setSpan(FilePickerConst.SPAN_TYPE.DETAIL_SPAN, 4)
+                .enableVideoPicker(false)
+                .enableCameraSupport(true)
+                .showGifs(false)
+                .showFolderView(true)
+                .enableSelectAll(false)
+                .enableImagePicker(true)
+                .setCameraPlaceholder(R.drawable.ic_camera)
+                .withOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)
+                .pickPhoto(this, CUSTOM_REQUEST_CODE);
     }
 
     @Override
     public void onApiResponce(int httpStatusCode, int successOrFail, String apiName, String apiResponce) {
         Log.d("update_api_response", "onApiResponce: " + apiResponce);
-
-        try {
-            JSONObject jsonObject = new JSONObject(apiResponce);
-            int is_active = jsonObject.getJSONObject("data").getJSONObject("user").getInt("is_active");
-            int userId = jsonObject.getJSONObject("data").getJSONObject("user").getInt("id");
-            int is_student = jsonObject.getJSONObject("data").getJSONObject("user").getInt("is_student");
-            String verified_at = jsonObject.getJSONObject("data").getJSONObject("user").getString("verified_at");
-            String deleted_at = jsonObject.getJSONObject("data").getJSONObject("user").getString("deleted_at");
-            String updated_at = jsonObject.getJSONObject("data").getJSONObject("user").getString("updated_at");
-            String created_at = jsonObject.getJSONObject("data").getJSONObject("user").getString("created_at");
-
-            String email = jsonObject.getJSONObject("data").getJSONObject("user").getString("email");
-            String first_name = jsonObject.getJSONObject("data").getJSONObject("user").getString("first_name");
-            String last_name = jsonObject.getJSONObject("data").getJSONObject("user").getString("last_name");
-            String roll_no = jsonObject.getJSONObject("data").getJSONObject("user").getString("roll_no");
-            String mobile_no = jsonObject.getJSONObject("data").getJSONObject("user").getString("mobile_no");
-            String enroll_year = jsonObject.getJSONObject("data").getJSONObject("user").getString("enroll_year");
-            String father_name = jsonObject.getJSONObject("data").getJSONObject("user").getString("father_name");
-            String department = jsonObject.getJSONObject("data").getJSONObject("user").getString("department");
-            String emergency_contact = jsonObject.getJSONObject("data").getJSONObject("user").getString("emergency_contact");
-            String cnic = jsonObject.getJSONObject("data").getJSONObject("user").getString("cnic");
-            String image_url = jsonObject.getJSONObject("data").getJSONObject("user").getString("image_url");
-
-            LoginResponse loginResponse = new LoginResponse(userId, is_active, is_student, verified_at, deleted_at, updated_at,
-                    created_at, email, fName, lName, roll_no, phoneNo, enroll_year, fatherName, department,
-                    emergency, cnic, image_url);
-
-            Gson gson = new Gson();
-            String json = gson.toJson(loginResponse);
-            SharedPreferences.Editor editor = getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE).edit();
-            editor.putString("Login_Response", json);
-            editor.apply();
-            Toast.makeText(this, "Login Response Saved", Toast.LENGTH_SHORT).show();
-            settingDataIntoFields();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
+        Toast.makeText(this, "" + apiResponce, Toast.LENGTH_SHORT).show();
     }
 }

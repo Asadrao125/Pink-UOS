@@ -6,10 +6,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 import de.hdodenhof.circleimageview.CircleImageView;
+import droidninja.filepicker.FilePickerBuilder;
+import droidninja.filepicker.FilePickerConst;
+import droidninja.filepicker.utils.ContentUriUtils;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
@@ -40,6 +45,7 @@ import com.karumi.dexter.listener.PermissionGrantedResponse;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.single.PermissionListener;
 import com.loopj.android.http.RequestParams;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -47,6 +53,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SignupActivity extends AppCompatActivity implements ApiCallback {
@@ -55,12 +62,12 @@ public class SignupActivity extends AppCompatActivity implements ApiCallback {
     ApiCallback apiCallback;
     CircleImageView profile_image;
     final int REQUEST_CODE_GALLERY = 999;
-    String imgFilePathTemp = "";
-    Uri outputFileUri;
     SharedPreferences.Editor editor;
     File op;
     String MY_PREFS_NAME = "pink-uos";
-    UserBean userBean;
+    String image_path;
+    private ArrayList<Uri> photoPaths = new ArrayList<>();
+    final int CUSTOM_REQUEST_CODE = 987;
     EditText edtFirstName, edtLastName, edtPhone, edtEmail, edtPassword, edtDepartment;
     EditText edtConfirmPassword, edtRollNo, edtEnrolYear, edtEmergency, edtFatherName, edtCNIC;
 
@@ -107,7 +114,7 @@ public class SignupActivity extends AppCompatActivity implements ApiCallback {
         String father_name = edtFatherName.getText().toString().trim();
         String cnic = edtCNIC.getText().toString().trim();
 
-        if (TextUtils.isEmpty(imgFilePathTemp)) {
+        if (image_path == null) {
             Toast.makeText(SignupActivity.this, "Please Select Image", Toast.LENGTH_SHORT).show();
         } else if (TextUtils.isEmpty(first_name)) {
             edtFirstName.setError("Empty");
@@ -147,9 +154,6 @@ public class SignupActivity extends AppCompatActivity implements ApiCallback {
             edtConfirmPassword.requestFocus();
         } else {
 
-            userBean = new UserBean(email, password, confirm_password, first_name, last_name, roll_no, phone, enroll_year, father_name,
-                    department, emergency, cnic, op);
-
             RequestParams requestParams = new RequestParams();
             requestParams.put("first_name", first_name);
             requestParams.put("email", email);
@@ -163,12 +167,13 @@ public class SignupActivity extends AppCompatActivity implements ApiCallback {
             requestParams.put("department", department);
             requestParams.put("emergency_contact", emergency);
             requestParams.put("cnic", cnic);
-            requestParams.setUseJsonStreamer(true);
             try {
-                requestParams.put("profile_image", new File(imgFilePathTemp));
+                Log.d("image_path", "image path: " + image_path);
+                requestParams.put("profile_image", new File(op.getAbsolutePath()));
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
+            requestParams.setUseJsonStreamer(true);
 
             ApiManager apiManager = new ApiManager(SignupActivity.this, "post", ApiManager.API_REGISTER_USER, requestParams, apiCallback);
             apiManager.loadURL();
@@ -181,7 +186,7 @@ public class SignupActivity extends AppCompatActivity implements ApiCallback {
                 .withListener(new PermissionListener() {
                     @Override
                     public void onPermissionGranted(PermissionGrantedResponse response) {
-                        dispatchTakePictureIntent();
+                        pickPhoto();
                     }
 
                     @Override
@@ -246,59 +251,6 @@ public class SignupActivity extends AppCompatActivity implements ApiCallback {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-
-        if (requestCode == REQUEST_CODE_GALLERY && resultCode == RESULT_OK && data != null) {
-            Uri uri = data.getData();
-
-            File destination = new File(Environment.getExternalStorageDirectory(), System.currentTimeMillis() + ".jpg");
-            Log.d("destination", "onActivityResult: " + destination);
-
-            try {
-                InputStream inputStream = getContentResolver().openInputStream(uri);
-                Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                profile_image.setImageBitmap(bitmap);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-        super.onActivityResult(requestCode, resultCode, data);
-    }
-
-    private void dispatchTakePictureIntent() {
-
-        long tim = System.currentTimeMillis();
-        String imgName = "image_" + tim + ".jpg";
-
-        File dir = getApplicationContext().getFilesDir();
-        File folder = new File(dir.getAbsolutePath() + "/images");
-        if (!folder.exists()) {
-            folder.mkdir();
-        }
-        op = new File(folder, imgName);
-
-        outputFileUri = FileProvider.getUriForFile(getApplicationContext(), getPackageName() + ".fileprovider", op);
-        imgFilePathTemp = op.getAbsolutePath();
-
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        takePictureIntent.setType("image/*");
-        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
-
-        //===============android19
-        List<ResolveInfo> resolvedIntentActivities = getPackageManager().queryIntentActivities(takePictureIntent, PackageManager.MATCH_DEFAULT_ONLY);
-        for (ResolveInfo resolvedIntentInfo : resolvedIntentActivities) {
-            String packageName = resolvedIntentInfo.activityInfo.packageName;
-            grantUriPermission(packageName, outputFileUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            //context.revokeUriPermissionfileUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        }
-        //==============android19
-
-        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            startActivityForResult(takePictureIntent, REQUEST_CODE_GALLERY);
-        }
-    }
-
-    @Override
     protected void onStart() {
         super.onStart();
         FirebaseMessaging.getInstance().getToken()
@@ -315,5 +267,51 @@ public class SignupActivity extends AppCompatActivity implements ApiCallback {
                         System.out.println("-- FCM Token : " + token);
                     }
                 });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == CUSTOM_REQUEST_CODE && resultCode == Activity.RESULT_OK && data != null) {
+            ArrayList<Uri> dataList = data.getParcelableArrayListExtra(FilePickerConst.KEY_SELECTED_MEDIA);
+            if (dataList != null) {
+                photoPaths = new ArrayList<Uri>();
+                photoPaths.addAll(dataList);
+
+                try {
+                    image_path = ContentUriUtils.INSTANCE.getFilePath(SignupActivity.this, photoPaths.get(0));
+                    if (image_path != null) {
+                        op = new File(image_path);
+                        Picasso.get().load(op).into(profile_image);
+                        System.out.println("-- file path " + op.getAbsolutePath());
+                        Log.d("image_path", "onActivityResult: "+op.getAbsolutePath());
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private void pickPhoto() {
+        FilePickerBuilder.getInstance()
+                .setMaxCount(1)
+                .setSelectedFiles(photoPaths)
+                .setActivityTheme(R.style.ThemeOverlay_AppCompat_Dark)
+                .setActivityTitle("Please select media")
+                .setImageSizeLimit(5)
+                .setVideoSizeLimit(10)
+                .setSpan(FilePickerConst.SPAN_TYPE.FOLDER_SPAN, 3)
+                .setSpan(FilePickerConst.SPAN_TYPE.DETAIL_SPAN, 4)
+                .enableVideoPicker(false)
+                .enableCameraSupport(true)
+                .showGifs(false)
+                .showFolderView(true)
+                .enableSelectAll(false)
+                .enableImagePicker(true)
+                .setCameraPlaceholder(R.drawable.ic_camera)
+                .withOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)
+                .pickPhoto(this, CUSTOM_REQUEST_CODE);
     }
 }

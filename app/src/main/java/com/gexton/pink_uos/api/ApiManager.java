@@ -16,6 +16,7 @@ import static android.content.Context.MODE_PRIVATE;
 
 public class ApiManager {
 
+    final int DEFAULT_TIMEOUT = 20 * 1000;
     Activity activity;
     String getOrPost;
     String apiName;
@@ -48,6 +49,7 @@ public class ApiManager {
 
     public void loadURL() {
         AsyncHttpClient client = new AsyncHttpClient();
+        client.setTimeout(DEFAULT_TIMEOUT);
         if (!TextUtils.isEmpty(fcm_token)) {
             client.addHeader("Platform", "android");
             client.addHeader("Content-Type", "application/json");
@@ -87,6 +89,9 @@ public class ApiManager {
 
     public void loadURLPanicBuzz() {
         AsyncHttpClient client = new AsyncHttpClient();
+
+        client.setTimeout(DEFAULT_TIMEOUT);
+
         if (!TextUtils.isEmpty(fcm_token) && !TextUtils.isEmpty(jwd_token)) {
             client.addHeader("Platform", "android");
             client.addHeader("Content-Type", "application/json");
