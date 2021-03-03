@@ -56,9 +56,26 @@
                 android:layout_height="100dp"
                 android:maxLines="3"
                 android:drawablePadding="10dp"
-                android:hint="Message (Optional)" />
+                android:hint="Message (Optional)"
+                android:gravity="top"/>
 
         </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Capture Image"
+            android:textColor="@color/white"
+            android:id="@+id/btnCaptureImage"/>
+
+        <ImageView
+            android:id="@+id/imageSelected"
+            android:visibility="gone"
+            android:layout_marginTop="20dp"
+            android:src="@mipmap/ic_launcher"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"/>
 
         <Button
             android:layout_width="match_parent"

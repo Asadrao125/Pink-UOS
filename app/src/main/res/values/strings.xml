@@ -4,4 +4,11 @@
     <string name="gps_not_enabled_msg_show_alert_gps_dialog">Please enable location</string>
     <string name="settings">Setting</string>
     <string name="cancel">Cancel</string>
+
+    <string name="default_notification_channel_id">channel_ID</string>
+    <string name="default_notification_channel_name">channel_Name</string>
+    <string name="msg_subscribed">msg_subscribed</string>
+    <string name="msg_subscribe_failed">msg_subscribed_failed</string>
+    <string name="fcm_message">fcm_message</string>
+
 </resources>
