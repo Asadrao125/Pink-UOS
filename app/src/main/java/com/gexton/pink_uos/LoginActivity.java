@@ -1,5 +1,6 @@
 package com.gexton.pink_uos;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -16,8 +17,12 @@ import android.widget.Toast;
 import com.gexton.pink_uos.api.ApiCallback;
 import com.gexton.pink_uos.api.ApiManager;
 import com.gexton.pink_uos.model.LoginResponse;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.gson.Gson;
 import com.loopj.android.http.RequestParams;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,7 +38,6 @@ public class LoginActivity extends AppCompatActivity implements ApiCallback {
     SharedPreferences.Editor editor;
     String MY_PREFS_NAME = "pink-uos";
     SharedPreferences prefs;
-    String login_response;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,7 +71,6 @@ public class LoginActivity extends AppCompatActivity implements ApiCallback {
         apiCallback = LoginActivity.this;
         editor = getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE).edit();
         prefs = getApplicationContext().getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
-        login_response = prefs.getString("Login_Response", "");
     }
 
     private void loginUser(String email, String password) {
@@ -92,46 +95,32 @@ public class LoginActivity extends AppCompatActivity implements ApiCallback {
     public void onApiResponce(int httpStatusCode, int successOrFail, String apiName, String apiResponce) {
         try {
             JSONObject jsonObject = new JSONObject(apiResponce);
+            Log.d("login_api_response", "onApiResponce: " + apiResponce + apiName + httpStatusCode + successOrFail);
             String jwd_token = jsonObject.getJSONObject("data").get("token").toString();
-            int is_active = jsonObject.getJSONObject("data").getJSONObject("user").getInt("is_active");
-            int userId = jsonObject.getJSONObject("data").getJSONObject("user").getInt("id");
-            int is_student = jsonObject.getJSONObject("data").getJSONObject("user").getInt("is_student");
-            String verified_at = jsonObject.getJSONObject("data").getJSONObject("user").getString("verified_at");
-            String deleted_at = jsonObject.getJSONObject("data").getJSONObject("user").getString("deleted_at");
-            String updated_at = jsonObject.getJSONObject("data").getJSONObject("user").getString("updated_at");
-            String created_at = jsonObject.getJSONObject("data").getJSONObject("user").getString("created_at");
-            
-            String email = jsonObject.getJSONObject("data").getJSONObject("user").getString("email");
+            String image_url = jsonObject.getJSONObject("data").getJSONObject("user").getString("image_url");
             String first_name = jsonObject.getJSONObject("data").getJSONObject("user").getString("first_name");
             String last_name = jsonObject.getJSONObject("data").getJSONObject("user").getString("last_name");
-            String roll_no = jsonObject.getJSONObject("data").getJSONObject("user").getString("roll_no");
             String mobile_no = jsonObject.getJSONObject("data").getJSONObject("user").getString("mobile_no");
-            String enroll_year = jsonObject.getJSONObject("data").getJSONObject("user").getString("enroll_year");
-            String father_name = jsonObject.getJSONObject("data").getJSONObject("user").getString("father_name");
-            String department = jsonObject.getJSONObject("data").getJSONObject("user").getString("department");
-            String emergency_contact = jsonObject.getJSONObject("data").getJSONObject("user").getString("emergency_contact");
-            String cnic = jsonObject.getJSONObject("data").getJSONObject("user").getString("cnic");
-            String image_url = jsonObject.getJSONObject("data").getJSONObject("user").getString("image_url");
+            int is_student = jsonObject.getJSONObject("data").getJSONObject("user").getInt("is_student");
+            String hash_id = jsonObject.getJSONObject("data").getJSONObject("user").getString("hashid");
 
             if (!TextUtils.isEmpty(jwd_token)) {
                 Log.d("jwd_token", "onApiResponce: " + jwd_token);
                 editor.putString("jwd_token", jwd_token);
+                editor.putInt("panenl_value", is_student);
+                editor.putString("first_name", first_name);
+                editor.putString("last_name", last_name);
+                editor.putString("image_url", image_url);
+                editor.putString("mobile_no", mobile_no);
+                editor.putString("hash_id", hash_id);
                 editor.apply();
 
-                LoginResponse loginResponse = new LoginResponse(userId, is_active, is_student, verified_at, deleted_at, updated_at,
-                        created_at, email, first_name, last_name, roll_no, mobile_no, enroll_year, father_name, department,
-                        emergency_contact, cnic, image_url);
-                Gson gson = new Gson();
-                String json = gson.toJson(loginResponse);
-                SharedPreferences.Editor editor = getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE).edit();
-                editor.putString("Login_Response", json);
-                editor.apply();
-                Toast.makeText(this, "Login Response Saved", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(getApplicationContext(), HomeActivity.class));
+                Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+                startActivity(intent);
                 finish();
 
             } else {
-                Toast.makeText(this, "Token Not Found", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "JWD Token Not Found", Toast.LENGTH_SHORT).show();
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -139,7 +128,8 @@ public class LoginActivity extends AppCompatActivity implements ApiCallback {
     }
 
     private void checkUserExistance() {
-        if (!TextUtils.isEmpty(login_response)) {
+        String jwd_token = prefs.getString("jwd_token", "");
+        if (!TextUtils.isEmpty(jwd_token)) {
             startActivity(new Intent(getApplicationContext(), HomeActivity.class));
             finish();
         }
@@ -149,5 +139,19 @@ public class LoginActivity extends AppCompatActivity implements ApiCallback {
     protected void onStart() {
         super.onStart();
         checkUserExistance();
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(new OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (!task.isSuccessful()) {
+                            Log.w("task_status", "Fetching FCM registration token failed", task.getException());
+                            return;
+                        }
+                        String token = task.getResult();
+                        editor.putString("fcm_token", token);
+                        editor.apply();
+                        System.out.println("-- FCM Token : " + token);
+                    }
+                });
     }
 }

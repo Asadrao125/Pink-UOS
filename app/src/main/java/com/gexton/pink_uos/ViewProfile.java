@@ -6,6 +6,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -24,6 +25,7 @@ public class ViewProfile extends AppCompatActivity {
     String MY_PREFS_NAME = "pink-uos";
     CircleImageView profileImage;
     Button btnUpdateProfile;
+    SharedPreferences prefs;
     TextView tvName, tvEmail, tvMobile, tvFatherName, tvDepartment, tvEmergency, tvCnic;
 
     @Override
@@ -47,6 +49,7 @@ public class ViewProfile extends AppCompatActivity {
         tvEmergency = findViewById(R.id.tvEmergency);
         tvCnic = findViewById(R.id.tvCnic);
         btnUpdateProfile = findViewById(R.id.btnUpdateProfile);
+        prefs = getApplicationContext().getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
 
         btnUpdateProfile.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -55,20 +58,16 @@ public class ViewProfile extends AppCompatActivity {
             }
         });
 
-        SharedPreferences prefs1 = this.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
-        String json = prefs1.getString("Login_Response", "");
-        Gson gson = new Gson();
-        LoginResponse loginResponse = gson.fromJson(json, LoginResponse.class);
-        if (loginResponse != null) {
-            String name = loginResponse.first_name + " " + loginResponse.last_name;
-            Picasso.get().load(loginResponse.image_url).into(profileImage);
-            tvName.setText(name);
-            tvEmail.setText(loginResponse.email);
-            tvMobile.setText(loginResponse.mobile_no);
-            tvFatherName.setText(loginResponse.father_name);
-            tvDepartment.setText(loginResponse.department);
-            tvEmergency.setText(loginResponse.emergency_contact);
-            tvCnic.setText(loginResponse.cnic);
+        String first_name = prefs.getString("first_name", "Name Not Found");
+        String last_name = prefs.getString("last_name", "Name Not Found");
+        String mobile = prefs.getString("mobile_no", "Phone No Not Found");
+        String image_url = prefs.getString("image_url", "Image Not Found");
+        Picasso.get().load(image_url).into(profileImage);
+        tvName.setText(first_name + " " + last_name);
+        if (TextUtils.isEmpty(mobile)){
+            tvMobile.setText("Mobile No Not Found");
+        } else {
+            tvMobile.setText(mobile);
         }
     }
 }

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="20dp"
+    android:layout_marginRight="20dp"
+    android:layout_marginTop="20dp"
+    android:layout_marginBottom="20dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tvReportAdded"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Chat Message Added"
+        android:textColor="@android:color/holo_green_dark" />
+
+    <TextView
+        android:id="@+id/tvNewNotification"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="New Notification"
+        android:textColor="@color/black" />
+
+    <TextView
+        android:id="@+id/tvateTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="date and time"
+        android:textSize="12sp" />
+
+</LinearLayout>

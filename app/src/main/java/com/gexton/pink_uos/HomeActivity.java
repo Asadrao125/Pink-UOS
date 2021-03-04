@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import droidninja.filepicker.FilePickerBuilder;
 import droidninja.filepicker.FilePickerConst;
 import droidninja.filepicker.utils.ContentUriUtils;
@@ -40,17 +42,20 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gexton.pink_uos.api.ApiCallback;
 import com.gexton.pink_uos.api.ApiManager;
+import com.gexton.pink_uos.model.LoginResponse;
 import com.gexton.pink_uos.utils.DialogClass;
 import com.gexton.pink_uos.utils.GPSTracker;
 import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.gson.Gson;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -67,28 +72,27 @@ import java.util.List;
 import java.util.Locale;
 
 public class HomeActivity extends AppCompatActivity implements ApiCallback {
-    double lat, lng;
-    TextView tvLocation;
+    File op;
     TextView tvName;
+    double lat, lng;
+    GPSTracker gpsTracker;
+    SharedPreferences prefs;
     MediaPlayer mediaPlayer;
+    ImageView imageSelected;
+    LinearLayout layoutTeacher, layoutStudent;
+    ApiCallback apiCallback;
     AudioManager audioManager;
+    SharedPreferences.Editor editor;
+    final int CUSTOM_REQUEST_CODE = 987;
     static final int CAMERA_REQUEST = 1888;
     static final int MY_CAMERA_PERMISSION_CODE = 100;
-    Button btnShareCredentials, btnPlayRingtone, btnProfile;
-    ImageView imageSelected;
-    Button btnCaptureImage;
-    String imgFilePathTemp = "";//Jugaaar
-    Uri outputFileUri;
-    ApiCallback apiCallback;
-    final int REQUEST_IMAGE_CAPTURE = 9766;
-    String MY_PREFS_NAME = "pink-uos";
-    SharedPreferences.Editor editor;
-    GPSTracker gpsTracker;
-    String address1;
-    File op;
-    final int CUSTOM_REQUEST_CODE = 987;
     private ArrayList<Uri> photoPaths = new ArrayList<>();
-    String image_path;
+    String MY_PREFS_NAME = "pink-uos", image_path, address1;
+    Button btnLogout;
+    Button btnNotifications;
+    TextView tvProfile;
+    ImageView imgReport, imgPlay;
+    Button btnCaptureImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,48 +108,12 @@ public class HomeActivity extends AppCompatActivity implements ApiCallback {
                     channelName, NotificationManager.IMPORTANCE_LOW));
         }
 
-        audioManager = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
-        btnPlayRingtone = findViewById(R.id.btnPlayRingtone);
-        btnShareCredentials = findViewById(R.id.btnShareCredentials);
-        gpsTracker = new GPSTracker(this);
-        tvLocation = findViewById(R.id.tvLocation);
-        editor = getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE).edit();
-        apiCallback = HomeActivity.this;
-        gpsTracker = new GPSTracker(HomeActivity.this);
-        btnProfile = findViewById(R.id.btnProfile);
+        init();
 
-        //Setting device volume to Max
-        AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        am.setStreamVolume(AudioManager.STREAM_MUSIC, am.getStreamMaxVolume(AudioManager.STREAM_MUSIC), 0);
+        imgReport = findViewById(R.id.imgReport);
+        imgPlay = findViewById(R.id.imgPlay);
 
-        mediaPlayer = MediaPlayer.create(HomeActivity.this, R.raw.alert_tone);
-        btnPlayRingtone.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mediaPlayer.isPlaying()) {
-                    btnPlayRingtone.setText("Buzz Now");
-                    mediaPlayer.stop();
-                    mediaPlayer.reset();
-                } else {
-                    btnPlayRingtone.setText("Stop Buzz");
-                    mediaPlayer = MediaPlayer.create(HomeActivity.this, R.raw.alert_tone);
-                    mediaPlayer.start();
-
-                    if (gpsTracker.canGetLocation()) {
-                        checkPermission();
-                        RequestParams requestParams = new RequestParams();
-                        requestParams.put("address", address1);
-                        requestParams.put("lat", gpsTracker.getLatitude());
-                        requestParams.put("lng", gpsTracker.getLongitude());
-                        requestParams.setUseJsonStreamer(true);
-                        ApiManager apiManager = new ApiManager(HomeActivity.this, "post", ApiManager.API_PANIC_BUZZ, requestParams, apiCallback);
-                        apiManager.loadURLPanicBuzz();
-                    }
-                }
-            }
-        });
-
-        btnShareCredentials.setOnClickListener(new View.OnClickListener() {
+        imgReport.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 checkPermission();
@@ -153,13 +121,91 @@ public class HomeActivity extends AppCompatActivity implements ApiCallback {
             }
         });
 
-        btnProfile.setOnClickListener(new View.OnClickListener() {
+        mediaPlayer = MediaPlayer.create(HomeActivity.this, R.raw.alert_tone);
+
+        imgPlay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mediaPlayer.isPlaying()) {
+                    imgPlay.setImageResource(R.drawable.play123);
+                    mediaPlayer.stop();
+                    mediaPlayer.reset();
+                } else {
+                    imgPlay.setImageResource(R.drawable.pause);
+                    mediaPlayer = MediaPlayer.create(HomeActivity.this, R.raw.alert_tone);
+                    mediaPlayer.start();
+
+                    if (gpsTracker.canGetLocation()) {
+                        checkPermission();
+                        RequestParams requestParams = new RequestParams();
+                        requestParams.put("address", address1);
+                        requestParams.put("lat", gpsTracker.getLatitude() + "");
+                        requestParams.put("lng", gpsTracker.getLongitude() + "");
+                        ApiManager apiManager = new ApiManager(HomeActivity.this, "post", ApiManager.API_PANIC_BUZZ, requestParams, apiCallback);
+                        apiManager.loadURLPanicBuzz();
+                    }
+
+                }
+            }
+        });
+
+        /*Setting device volume to Max
+        AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        am.setStreamVolume(AudioManager.STREAM_MUSIC, am.getStreamMaxVolume(AudioManager.STREAM_MUSIC), 0); */
+
+        mediaPlayer = MediaPlayer.create(HomeActivity.this, R.raw.alert_tone);
+
+        tvProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 startActivity(new Intent(getApplicationContext(), ViewProfile.class));
             }
         });
 
+        tvProfile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(getApplicationContext(), ViewProfile.class));
+            }
+        });
+
+        btnNotifications.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(getApplicationContext(), NotificationsActivity.class));
+            }
+        });
+
+        btnLogout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                editor.remove("first_name");
+                editor.remove("last_name");
+                editor.remove("mobile_no");
+                editor.remove("image_url");
+                editor.remove("jwd_token");
+                editor.remove("fcm_token");
+                editor.remove("panenl_value");
+                editor.remove("hash_id");
+                editor.apply();
+                startActivity(new Intent(getApplicationContext(), LoginActivity.class));
+                finish();
+            }
+        });
+    }
+
+    private void init() {
+        audioManager = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+        gpsTracker = new GPSTracker(this);
+        apiCallback = HomeActivity.this;
+        gpsTracker = new GPSTracker(HomeActivity.this);
+        editor = getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE).edit();
+        prefs = this.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+        btnLogout = findViewById(R.id.btnLogout);
+        btnNotifications = findViewById(R.id.btnNotifications);
+        tvProfile = findViewById(R.id.tvProfile);
+        layoutStudent = findViewById(R.id.layoutStudent);
+        layoutTeacher = findViewById(R.id.layoutTeacher);
     }
 
     private void openDialog() {
@@ -194,7 +240,6 @@ public class HomeActivity extends AppCompatActivity implements ApiCallback {
         btnCaptureImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //dispatchTakePictureIntent();
                 pickPhoto();
             }
         });
@@ -206,24 +251,23 @@ public class HomeActivity extends AppCompatActivity implements ApiCallback {
         btnSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(HomeActivity.this, "Lat: " + gpsTracker.getLatitude() + "\nLng: " + gpsTracker.getLongitude(), Toast.LENGTH_SHORT).show();
                 RequestParams requestParams = new RequestParams();
                 requestParams.put("address", address1);
-                requestParams.put("lat", gpsTracker.getLatitude());
-                requestParams.put("lng", gpsTracker.getLongitude());
+                requestParams.put("lat", gpsTracker.getLatitude() + "");
+                requestParams.put("lng", gpsTracker.getLongitude() + "");
                 requestParams.put("msg", edtMessage.getText().toString().trim());
-                requestParams.setUseJsonStreamer(true);
                 try {
                     File file = new File(image_path);
                     requestParams.put("image", file);
                     Log.d("image_path", "onClick: " + image_path);
-                    requestParams.setUseJsonStreamer(false);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
+                //requestParams.setUseJsonStreamer(true);
                 ApiManager apiManager = new ApiManager(HomeActivity.this, "post", ApiManager.API_PANIC_REPORT, requestParams, apiCallback);
                 apiManager.loadURLPanicBuzz();
-                Toast.makeText(HomeActivity.this, "Msg: " + edtMessage.getText().toString().trim(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(HomeActivity.this, "Complaint Submitted", Toast.LENGTH_SHORT).show();
+                alertDialog.dismiss();
             }
         });
         alertDialog.show();
@@ -283,28 +327,6 @@ public class HomeActivity extends AppCompatActivity implements ApiCallback {
         }
     }
 
-    /* @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            //DATA.isImageCaptured = true;
-            //DATA.imagePath = getRealPathFromURI(outputFileUri);
-            if (outputFileUri == null) {
-                System.out.println(" outputFileUri: " + outputFileUri);
-                return;
-            }
-            //DATA.imagePath = ImageFilePath.getPath(activity, outputFileUri);//GM commented.. file provider issue android O
-            //String imagePath = imgFilePathTemp;// temp solution....GM
-            System.out.println("-- output image path: " + imgFilePathTemp);
-            System.out.println("-- output file uri: " + outputFileUri);
-
-            btnCaptureImage.setVisibility(View.GONE);
-            imageSelected.setVisibility(View.VISIBLE);
-            imageSelected.setImageBitmap(BitmapFactory.decodeFile(imgFilePathTemp));
-        }
-    }*/
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -330,8 +352,7 @@ public class HomeActivity extends AppCompatActivity implements ApiCallback {
 
     @Override
     public void onApiResponce(int httpStatusCode, int successOrFail, String apiName, String apiResponce) {
-        Toast.makeText(HomeActivity.this, "" + apiResponce, Toast.LENGTH_SHORT).show();
-        Log.d("panic_buzz", "onApiResponce: " + apiResponce);
+        Log.d("Home_Activity_Response", "onApiResponce: " + apiResponce);
     }
 
     @Override
@@ -382,43 +403,30 @@ public class HomeActivity extends AppCompatActivity implements ApiCallback {
                 .pickPhoto(this, CUSTOM_REQUEST_CODE);
     }
 
-    private void dispatchTakePictureIntent() {
-
-        long tim = System.currentTimeMillis();
-        String imgName = "image_" + tim + ".jpg";
-
-        //note this is lagacy storage  shut down after android 30- GM
-        /*File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-        File op = new File(dir, imgName);*/
-        //note this is lagacy storage  shut down after android 30- GM
-
-        //note this is scopped storage - GM
-        File dir = getApplicationContext().getFilesDir();
-        File folder = new File(dir.getAbsolutePath() + "/images");
-        if (!folder.exists()) {
-            folder.mkdir();
+    private void checkUser() {
+        int is_student = prefs.getInt("panenl_value", 10000);
+        if (is_student == 0) {
+            btnNotifications.setVisibility(View.VISIBLE);
+            layoutTeacher.setVisibility(View.VISIBLE);
+            layoutStudent.setVisibility(View.GONE);
+        } else {
+            layoutTeacher.setVisibility(View.GONE);
+            layoutStudent.setVisibility(View.VISIBLE);
+            btnNotifications.setVisibility(View.GONE);
         }
-        op = new File(folder, imgName);
-        //note this is scopped storage - GM
+    }
 
-        //outputFileUri = Uri.fromFile(op);//Android O
-        outputFileUri = FileProvider.getUriForFile(getApplicationContext(), getPackageName() + ".fileprovider", op);
-        imgFilePathTemp = op.getAbsolutePath();
+    @Override
+    protected void onStart() {
+        super.onStart();
+        checkUser();
+        loadPanicBuzzReports();
+    }
 
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
-
-        //===============android19
-        List<ResolveInfo> resolvedIntentActivities = getPackageManager().queryIntentActivities(takePictureIntent, PackageManager.MATCH_DEFAULT_ONLY);
-        for (ResolveInfo resolvedIntentInfo : resolvedIntentActivities) {
-            String packageName = resolvedIntentInfo.activityInfo.packageName;
-            grantUriPermission(packageName, outputFileUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            //context.revokeUriPermissionfileUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        }
-        //==============android19
-
-        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-        }
+    private void loadPanicBuzzReports() {
+        RequestParams requestParams = new RequestParams();
+        requestParams.setUseJsonStreamer(true);
+        ApiManager apiManager = new ApiManager(HomeActivity.this, "get", ApiManager.API_VIEW_PANIC_BUZZ, requestParams, apiCallback);
+        apiManager.loadGetRequests();
     }
 }

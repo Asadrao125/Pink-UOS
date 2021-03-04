@@ -10,5 +10,7 @@
     <string name="msg_subscribed">msg_subscribed</string>
     <string name="msg_subscribe_failed">msg_subscribed_failed</string>
     <string name="fcm_message">fcm_message</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

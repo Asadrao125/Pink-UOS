@@ -169,7 +169,8 @@ public class SignupActivity extends AppCompatActivity implements ApiCallback {
             requestParams.put("cnic", cnic);
             try {
                 Log.d("image_path", "image path: " + image_path);
-                requestParams.put("profile_image", new File(op.getAbsolutePath()));
+                File file = new File(image_path);
+                requestParams.put("profile_image", file);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
@@ -285,7 +286,7 @@ public class SignupActivity extends AppCompatActivity implements ApiCallback {
                         op = new File(image_path);
                         Picasso.get().load(op).into(profile_image);
                         System.out.println("-- file path " + op.getAbsolutePath());
-                        Log.d("image_path", "onActivityResult: "+op.getAbsolutePath());
+                        Log.d("image_path", "onActivityResult: " + op.getAbsolutePath());
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

@@ -60,18 +60,17 @@ public class UpdateProfile extends AppCompatActivity implements ApiCallback {
     File op;
     ApiCallback apiCallback;
     String fName, lName, phoneNo;
-    String emergency, fatherName;
     final int CUSTOM_REQUEST_CODE = 987;
     private ArrayList<Uri> photoPaths = new ArrayList<>();
     String image_path;
     String address, city, state, zipcode;
     GPSTracker gpsTracker;
+    SharedPreferences prefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_update_profile);
-
 
         imgBack = findViewById(R.id.imgBack);
         btnUpdate = findViewById(R.id.btnUpdate);
@@ -81,6 +80,7 @@ public class UpdateProfile extends AppCompatActivity implements ApiCallback {
         edtLastName = findViewById(R.id.edtLastName);
         apiCallback = UpdateProfile.this;
         gpsTracker = new GPSTracker(this);
+        prefs = getApplicationContext().getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
 
         settingDataIntoFields();
 
@@ -112,7 +112,7 @@ public class UpdateProfile extends AppCompatActivity implements ApiCallback {
                 lName = edtLastName.getText().toString().trim();
                 phoneNo = edtPhone.getText().toString().trim();
 
-                if (!TextUtils.isEmpty(fName) && !TextUtils.isEmpty(lName) && !TextUtils.isEmpty(phoneNo) && !TextUtils.isEmpty(image_path)) {
+                if (!TextUtils.isEmpty(fName) && !TextUtils.isEmpty(lName) && !TextUtils.isEmpty(phoneNo) && !TextUtils.isEmpty(image_path) && !TextUtils.isEmpty(address)) {
                     RequestParams requestParams = new RequestParams();
                     requestParams.put("first_name", fName);
                     requestParams.put("last_name", lName);
@@ -122,12 +122,11 @@ public class UpdateProfile extends AppCompatActivity implements ApiCallback {
                     requestParams.put("zipcode", zipcode);
                     requestParams.put("phone_no", phoneNo);
                     try {
-                        requestParams.put("profile_image", new File(image_path));
+                        File file = new File(image_path);
+                        requestParams.put("profile_image", file);
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }
-                    requestParams.setUseJsonStreamer(true);
-
                     ApiManager apiManager = new ApiManager(UpdateProfile.this, "post", ApiManager.API_UPDATE_PROFILE, requestParams, apiCallback);
                     apiManager.loadURLPanicBuzz();
                 }
@@ -143,23 +142,15 @@ public class UpdateProfile extends AppCompatActivity implements ApiCallback {
     }
 
     private void settingDataIntoFields() {
-        SharedPreferences prefs1 = this.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
-        String json = prefs1.getString("Login_Response", "");
-        Gson gson = new Gson();
-        LoginResponse loginResponse = gson.fromJson(json, LoginResponse.class);
-        if (loginResponse != null) {
-            String firstName = loginResponse.first_name;
-            String lastName = loginResponse.last_name;
-            String phone = loginResponse.mobile_no;
+        String first_name = prefs.getString("first_name", "Name Not Found");
+        String last_name = prefs.getString("last_name", "Name Not Found");
+        String mobile = prefs.getString("mobile_no", "Phone No Not Found");
+        String image_url = prefs.getString("image_url", "Image Not Found");
+        Picasso.get().load(image_url).into(profileImage);
 
-            emergency = loginResponse.emergency_contact;
-            fatherName = loginResponse.father_name;
-
-            Picasso.get().load(loginResponse.image_url).into(profileImage);
-            edtFirstName.setText(firstName);
-            edtLastName.setText(lastName);
-            edtPhone.setText(phone);
-        }
+        edtFirstName.setText(first_name);
+        edtLastName.setText(last_name);
+        edtPhone.setText(mobile);
     }
 
     @Override
