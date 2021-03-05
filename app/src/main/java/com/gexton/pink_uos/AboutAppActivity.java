@@ -27,7 +27,7 @@ public class AboutAppActivity extends AppCompatActivity {
             }
         });
 
-        tvAboutApp.setText(Html.fromHtml("<h5 align=\"center\">Xpendings is an app that avails you to manage your income and expenses.</h5>\n" +
+        /*  tvAboutApp.setText(Html.fromHtml("<h5 align=\"center\">Xpendings is an app that avails you to manage your income and expenses.</h5>\n" +
                 "<p>Xpendings is the most facile & most convenient way to keep track of your incomes and expenses. You can integrate variants of categories with an astounding accumulation of colors and images.</p>\n" +
                 "<br/>\n" +
                 "<p>App provides the following features:</p>\n" +
@@ -44,7 +44,9 @@ public class AboutAppActivity extends AppCompatActivity {
                 "<br/>\n" +
                 "<li>This app sanctions you to visually perceive all the transactions visually and you can apportion it as well.</li>\n" +
                 "<br/>\n" +
-                "<H6 align=\"center\">Xpendings is Developed by Gexton INC.</h6>"));
+                "<H6 align=\"center\">Xpendings is Developed by Gexton INC.</h6>"));*/
+
+        tvAboutApp.setText("This app is specifically designed for the female students, faculty members and admin staff of the University of Sindh, Jamshoro to report any harrasment incident to the authorities in real time. This app will help to make campus safe for all the females and Study and work with respect and confidence.");
 
 
     }
