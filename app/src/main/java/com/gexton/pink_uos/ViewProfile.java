@@ -26,7 +26,7 @@ public class ViewProfile extends AppCompatActivity {
     CircleImageView profileImage;
     Button btnUpdateProfile;
     SharedPreferences prefs;
-    TextView tvName, tvEmail, tvMobile, tvFatherName, tvDepartment, tvEmergency, tvCnic;
+    TextView tvFirstName, tvPhone, tvLastName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,14 +40,12 @@ public class ViewProfile extends AppCompatActivity {
                 onBackPressed();
             }
         });
+
         profileImage = findViewById(R.id.profileImage);
-        tvName = findViewById(R.id.tvName);
-        tvEmail = findViewById(R.id.tvEmail);
-        tvMobile = findViewById(R.id.tvMobile);
-        tvFatherName = findViewById(R.id.tvFatherName);
-        tvDepartment = findViewById(R.id.tvDepartment);
-        tvEmergency = findViewById(R.id.tvEmergency);
-        tvCnic = findViewById(R.id.tvCnic);
+        tvFirstName = findViewById(R.id.tvFirstName);
+        tvLastName = findViewById(R.id.tvLastName);
+        tvPhone = findViewById(R.id.tvPhone);
+
         btnUpdateProfile = findViewById(R.id.btnUpdateProfile);
         prefs = getApplicationContext().getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
 
@@ -58,16 +56,42 @@ public class ViewProfile extends AppCompatActivity {
             }
         });
 
-        String first_name = prefs.getString("first_name", "Name Not Found");
-        String last_name = prefs.getString("last_name", "Name Not Found");
-        String mobile = prefs.getString("mobile_no", "Phone No Not Found");
-        String image_url = prefs.getString("image_url", "Image Not Found");
+        String first_name = prefs.getString("first_name", "");
+        String last_name = prefs.getString("last_name", "");
+        String mobile = prefs.getString("mobile_no", "");
+        String image_url = prefs.getString("image_url", "");
+
         Picasso.get().load(image_url).into(profileImage);
-        tvName.setText(first_name + " " + last_name);
-        if (TextUtils.isEmpty(mobile)){
-            tvMobile.setText("Mobile No Not Found");
-        } else {
-            tvMobile.setText(mobile);
+        tvFirstName.setText(first_name);
+        tvLastName.setText(last_name);
+        tvPhone.setText(mobile);
+        if (TextUtils.isEmpty(mobile)) {
+            tvPhone.setText("No contact found");
+        } else if (TextUtils.isEmpty(first_name)) {
+            tvFirstName.setText("No first name found");
+        } else if (TextUtils.isEmpty(first_name)) {
+            tvLastName.setText("No last name found");
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        String first_name = prefs.getString("first_name", "");
+        String last_name = prefs.getString("last_name", "");
+        String mobile = prefs.getString("mobile_no", "");
+        String image_url = prefs.getString("image_url", "");
+
+        Picasso.get().load(image_url).into(profileImage);
+        tvFirstName.setText(first_name);
+        tvLastName.setText(last_name);
+        tvPhone.setText(mobile);
+        if (TextUtils.isEmpty(mobile)) {
+            tvPhone.setText("No contact found");
+        } else if (TextUtils.isEmpty(first_name)) {
+            tvFirstName.setText("No first name found");
+        } else if (TextUtils.isEmpty(first_name)) {
+            tvLastName.setText("No last name found");
         }
     }
 }

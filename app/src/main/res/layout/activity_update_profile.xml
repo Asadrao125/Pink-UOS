@@ -64,7 +64,7 @@
                         android:id="@+id/edtFirstName"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="First Name" />
+                        android:hint="First name not found" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -78,7 +78,7 @@
                         android:id="@+id/edtLastName"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Last Name" />
+                        android:hint="Last name not found" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -92,7 +92,7 @@
                         android:id="@+id/edtPhone"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Phone No" />
+                        android:hint="Phone not found" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".PanicReportDetailActivity">
+
+    <LinearLayout
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/pink"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="20dp">
+
+        <ImageView
+            android:id="@+id/imgBack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:src="@drawable/back" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Detail"
+            android:textColor="@color/white"
+            android:textSize="18sp" />
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RelativeLayout
+            android:id="@+id/nameLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp">
+
+            <TextView
+                android:layout_marginTop="5dp"
+                android:layout_width="wrap_content"
+                android:id="@+id/tvUsername"
+                android:textSize="16sp"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/imageUser"
+                android:text="Junaid Amin" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/imageUser"
+                android:layout_below="@+id/tvUsername"
+                android:id="@+id/tvCreatedAt"
+                android:text="Created At" />
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/imageUser"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="10dp"
+                android:src="@mipmap/ic_launcher"
+                app:civ_border_color="@color/pink"
+                app:civ_border_width="5px" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/locationLayout"
+            android:layout_margin="20dp"
+            android:layout_below="@+id/nameLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_margin="5dp"
+                android:id="@+id/reportMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@id/imageReport"
+                android:text="Report Message"/>
+
+            <TextView
+                android:id="@+id/reportLocation"
+                android:layout_margin="5dp"
+                android:layout_toStartOf="@id/imageReport"
+                android:layout_below="@id/reportMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Report Location"/>
+
+            <ImageView
+                android:layout_alignParentEnd="true"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_centerInParent="true"
+                android:layout_marginLeft="10dp"
+                android:id="@+id/imageReport"
+                android:src="@mipmap/ic_launcher"/>
+
+        </RelativeLayout>
+
+        <fragment
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:id="@+id/map_map"
+            android:layout_marginTop="20dp"
+            android:layout_below="@+id/locationLayout"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            tools:context=".PanicReportDetailActivity" />
+
+    </RelativeLayout>
+
+</LinearLayout>

@@ -149,10 +149,6 @@ public class HomeActivity extends AppCompatActivity implements ApiCallback {
             }
         });
 
-        /*Setting device volume to Max
-        AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        am.setStreamVolume(AudioManager.STREAM_MUSIC, am.getStreamMaxVolume(AudioManager.STREAM_MUSIC), 0); */
-
         mediaPlayer = MediaPlayer.create(HomeActivity.this, R.raw.alert_tone);
 
         tvProfile.setOnClickListener(new View.OnClickListener() {

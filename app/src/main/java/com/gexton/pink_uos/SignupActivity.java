@@ -223,6 +223,15 @@ public class SignupActivity extends AppCompatActivity implements ApiCallback {
     @Override
     public void onApiResponce(int httpStatusCode, int successOrFail, String apiName, String apiResponce) {
         Log.d("signup_api_response", "onApiResponce: " + apiResponce + apiName + httpStatusCode + successOrFail);
+
+        try {
+            JSONObject jsonObject = new JSONObject(apiResponce);
+            String msg = jsonObject.getString("msg");
+            Toast.makeText(getApplicationContext(), "" + msg, Toast.LENGTH_SHORT).show();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
         try {
             JSONObject jsonObject = new JSONObject(apiResponce);
             String response = jsonObject.getString("data");

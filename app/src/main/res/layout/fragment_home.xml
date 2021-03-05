@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".fragments.FragmentHome">
+
+    <LinearLayout
+        android:visibility="gone"
+        android:id="@+id/layoutStudent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:background="#CF1515"
+            android:orientation="vertical">
+            <ImageView
+                android:id="@+id/imgPlay"
+                app:tint="@color/white"
+                android:src="@drawable/play123"
+                android:layout_width="wrap_content"
+                android:layout_height="100dp" />
+
+            <TextView
+                android:layout_marginTop="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:text="Panic Buzz"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textStyle="bold"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:background="@color/black"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/imgReport"
+                app:tint="@color/white"
+                android:layout_width="wrap_content"
+                android:src="@drawable/newspaper"
+                android:layout_height="100dp"/>
+
+            <TextView
+                android:layout_marginTop="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:text="Emergency Complain"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textStyle="bold"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+   <RelativeLayout
+       android:id="@+id/teacherLayout"
+       android:layout_width="match_parent"
+       android:layout_height="match_parent">
+
+       <androidx.viewpager.widget.ViewPager
+           android:id="@+id/viewPager"
+           android:layout_width="match_parent"
+           android:layout_height="match_parent"
+           android:layout_below="@id/tabs"
+           app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+       <com.google.android.material.tabs.TabLayout
+           android:id="@+id/tabs"
+           android:layout_width="match_parent"
+           android:layout_height="wrap_content"
+           app:tabGravity="fill"
+           android:background="@color/pink"
+           app:tabIndicatorColor="@color/white"
+           app:tabMode="fixed"
+           app:tabTextColor="@color/black"
+           app:tabSelectedTextColor="@android:color/white" />
+
+   </RelativeLayout>
+
+</RelativeLayout>

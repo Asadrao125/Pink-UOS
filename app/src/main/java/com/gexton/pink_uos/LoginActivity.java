@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gexton.pink_uos.api.ApiCallback;
@@ -38,6 +39,7 @@ public class LoginActivity extends AppCompatActivity implements ApiCallback {
     SharedPreferences.Editor editor;
     String MY_PREFS_NAME = "pink-uos";
     SharedPreferences prefs;
+    TextView tvForgotPassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +63,15 @@ public class LoginActivity extends AppCompatActivity implements ApiCallback {
                 startActivity(new Intent(getApplicationContext(), SignupActivity.class));
             }
         });
+
+        tvForgotPassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), ForgetAndChangePasswordActivity.class);
+                intent.putExtra("val","fp");
+                startActivity(intent);
+            }
+        });
     }
 
     private void init() {
@@ -71,6 +82,7 @@ public class LoginActivity extends AppCompatActivity implements ApiCallback {
         apiCallback = LoginActivity.this;
         editor = getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE).edit();
         prefs = getApplicationContext().getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+        tvForgotPassword = findViewById(R.id.tvForgotPassword);
     }
 
     private void loginUser(String email, String password) {
@@ -95,6 +107,10 @@ public class LoginActivity extends AppCompatActivity implements ApiCallback {
     public void onApiResponce(int httpStatusCode, int successOrFail, String apiName, String apiResponce) {
         try {
             JSONObject jsonObject = new JSONObject(apiResponce);
+
+            String msg = jsonObject.getString("msg");
+            Toast.makeText(getApplicationContext(), "" + msg, Toast.LENGTH_SHORT).show();
+
             Log.d("login_api_response", "onApiResponce: " + apiResponce + apiName + httpStatusCode + successOrFail);
             String jwd_token = jsonObject.getJSONObject("data").get("token").toString();
             String image_url = jsonObject.getJSONObject("data").getJSONObject("user").getString("image_url");
@@ -115,7 +131,7 @@ public class LoginActivity extends AppCompatActivity implements ApiCallback {
                 editor.putString("hash_id", hash_id);
                 editor.apply();
 
-                Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
+                Intent intent = new Intent(getApplicationContext(), NewHomeActivity.class);
                 startActivity(intent);
                 finish();
 
@@ -130,7 +146,7 @@ public class LoginActivity extends AppCompatActivity implements ApiCallback {
     private void checkUserExistance() {
         String jwd_token = prefs.getString("jwd_token", "");
         if (!TextUtils.isEmpty(jwd_token)) {
-            startActivity(new Intent(getApplicationContext(), HomeActivity.class));
+            startActivity(new Intent(getApplicationContext(), NewHomeActivity.class));
             finish();
         }
     }

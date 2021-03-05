@@ -3,6 +3,7 @@ package com.gexton.pink_uos;
 import androidx.appcompat.app.AppCompatActivity;
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import android.Manifest;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -11,57 +12,62 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.gexton.pink_uos.adapters.NotificationAdapter;
 import com.gexton.pink_uos.api.ApiCallback;
 import com.gexton.pink_uos.api.ApiManager;
-import com.gexton.pink_uos.model.NotificationModel;
+import com.gexton.pink_uos.utils.GPSTracker;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.MultiplePermissionsReport;
+import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.PermissionRequest;
+import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.loopj.android.http.RequestParams;
 import com.squareup.picasso.Picasso;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class PanicBuzzDetailActivity extends AppCompatActivity implements ApiCallback, OnMapReadyCallback {
-    String id;
-
-    ApiCallback apiCallback;
+public class PanicReportDetailActivity extends AppCompatActivity implements ApiCallback, OnMapReadyCallback {
     ImageView imgBack;
-    TextView tvUsername, createdAt;
-    CircleImageView imageUser;
+    ApiCallback apiCallback;
     String address;
-    TextView reportLocation;
-    private GoogleMap mMap;
-    String first_name, last_name, imageUserUrl, lat, lng, created_at;
-    String latt, lngg;
+    CircleImageView imageUser;
+    ImageView imageReport;
+    TextView reportLocation, reportMessage;
+    TextView tvUsername, createdAt;
+    String imageReportUrl;
+    String id;
     String notif_id;
+    GPSTracker gpsTracker;
+    String first_name, last_name, imageUserUrl, lat, lng, msg, created_at;
+    private GoogleMap mMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_panic_buzz_detail);
+        setContentView(R.layout.activity_panic_report_detail);
 
-        apiCallback = PanicBuzzDetailActivity.this;
         imgBack = findViewById(R.id.imgBack);
+        apiCallback = PanicReportDetailActivity.this;
         tvUsername = findViewById(R.id.tvUsername);
         createdAt = findViewById(R.id.tvCreatedAt);
         imageUser = findViewById(R.id.imageUser);
-        id = getIntent().getStringExtra("id");
+        imageReport = findViewById(R.id.imageReport);
         reportLocation = findViewById(R.id.reportLocation);
+        reportMessage = findViewById(R.id.reportMessage);
+        id = getIntent().getStringExtra("id");
+        gpsTracker = new GPSTracker(this);
+        //logout neechy
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -76,29 +82,35 @@ public class PanicBuzzDetailActivity extends AppCompatActivity implements ApiCal
         });
 
         notif_id = getIntent().getStringExtra("notif_id");
-
     }
 
     @Override
     public void onApiResponce(int httpStatusCode, int successOrFail, String apiName, String apiResponce) {
-        Log.d("panic_buzz_detail", "onApiResponce: " + apiResponce);
+        Log.d("panic_report_detail", "onApiResponce: " + apiResponce);
 
         try {
             JSONObject jsonObject = new JSONObject(apiResponce);
-            JSONObject jsonObject1 = jsonObject.getJSONObject("data").getJSONObject("buzz");
+            JSONObject jsonObject1 = jsonObject.getJSONObject("data").getJSONObject("report");
             Log.d("lets_see", "onApiResponce: " + jsonObject1);
-
-            created_at = jsonObject1.getString("created_at");
-            address = jsonObject1.getString("address");
-            latt = jsonObject1.getString("lat");
-            lngg = jsonObject1.getString("lng");
 
             first_name = jsonObject1.getJSONObject("user").getString("first_name");
             last_name = jsonObject1.getJSONObject("user").getString("last_name");
             imageUserUrl = jsonObject1.getJSONObject("user").getString("image_url");
 
-            double lattt = Double.parseDouble(latt);
-            double lnggg = Double.parseDouble(lngg);
+            lat = jsonObject1.getString("lat");
+            address = jsonObject1.getString("address");
+            lng = jsonObject1.getString("lng");
+            imageReportUrl = jsonObject1.getString("image_url");
+            msg = jsonObject1.getString("msg");
+            created_at = jsonObject1.getString("created_at");
+
+            if (TextUtils.isEmpty(imageReportUrl)) {
+                imageReport.setVisibility(View.GONE);
+            }
+
+
+            double lattt = Double.parseDouble(lat);
+            double lnggg = Double.parseDouble(lng);
 
             LatLng sydney = new LatLng(lattt, lnggg);
             mMap.addMarker(new MarkerOptions().position(sydney).title(first_name + " " + last_name));
@@ -114,16 +126,15 @@ public class PanicBuzzDetailActivity extends AppCompatActivity implements ApiCal
             }
 
             tvUsername.setText(first_name + " " + last_name);
+            //picasso user
             Picasso.get().load(imageUserUrl).placeholder(R.drawable.ic_launcher_background).into(imageUser);
+            //picasso report
+            Picasso.get().load(imageReportUrl).placeholder(R.drawable.ic_launcher_background).into(imageReport);
+            reportMessage.setText(msg);
             createdAt.setText(commentDate);
+            reportLocation.setText(address);
 
-            if (!TextUtils.isEmpty(address)) {
-                reportLocation.setText("Address not found");
-            } else {
-                reportLocation.setText(address);
-            }
-
-            Log.d("data_data", "onApiResponce: " + latt + " " + lngg);
+            Log.d("data_data", "onApiResponce: " + lat + " " + lng);
 
         } catch (JSONException e) {
             e.printStackTrace();
@@ -133,10 +144,31 @@ public class PanicBuzzDetailActivity extends AppCompatActivity implements ApiCal
     @Override
     protected void onStart() {
         super.onStart();
-        RequestParams requestParams = new RequestParams();
-        requestParams.put("notification_id", notif_id);
-        ApiManager apiManager = new ApiManager(PanicBuzzDetailActivity.this, "post", ApiManager.API_VIEW_PANIC_BUZZ + id, requestParams, apiCallback);
-        apiManager.loadURLPanicBuzz();
+        checkPermission();
+    }
+
+    private void checkPermission() {
+        Dexter.withContext(this)
+                .withPermissions(Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE)
+                .withListener(new MultiplePermissionsListener() {
+                    @Override
+                    public void onPermissionsChecked(MultiplePermissionsReport multiplePermissionsReport) {
+                        if (multiplePermissionsReport.areAllPermissionsGranted()) {
+                            RequestParams requestParams = new RequestParams();
+                            requestParams.put("notification_id", notif_id);
+                            ApiManager apiManager = new ApiManager(PanicReportDetailActivity.this, "post", ApiManager.API_VIEW_PANIC_REPORT + id, requestParams, apiCallback);
+                            apiManager.loadURLPanicBuzz();
+                        } else {
+                            gpsTracker.enableLocationPopup();
+                        }
+                    }
+
+                    @Override
+                    public void onPermissionRationaleShouldBeShown(List<PermissionRequest> list, PermissionToken permissionToken) {
+                        permissionToken.continuePermissionRequest();
+                    }
+                }).check();
     }
 
     @Override

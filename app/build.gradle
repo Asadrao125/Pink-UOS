@@ -58,4 +58,5 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.4.10"
     implementation 'androidx.multidex:multidex:2.0.1'
     implementation 'org.apache.commons:commons-lang3:3.6'
+    implementation 'com.google.android.gms:play-services-maps:17.0.0'
 }

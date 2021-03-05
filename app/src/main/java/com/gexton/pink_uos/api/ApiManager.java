@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.gexton.pink_uos.utils.Dialog_CustomProgress;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.MySSLSocketFactory;
@@ -33,10 +34,17 @@ public class ApiManager {
     public static final String API_VIEW_PANIC_BUZZ = "guiders/panic_buzz/view/";
     public static final String API_GUIDERS_NOTIFICATIONS = "guiders/notifications";
     public static final String API_VIEW_PANIC_REPORT = "guiders/panic_report/view/";
+    public static final String API_CHANGE_PASSWORD = "change_password";
+    public static final String API_FORGET_PASSWORD = "forget_password";
+    public static final String API_LOGOUT = "logout";
     String MY_PREFS_NAME = "pink-uos";
     SharedPreferences prefs;
     String fcm_token;
     String jwd_token;
+
+    Dialog_CustomProgress customProgressDialog;
+
+    public static boolean shouldShowPD = true;
 
     public ApiManager(Activity activity, String getOrPost, String apiName, RequestParams params, ApiCallback apiCallback) {
         this.activity = activity;
@@ -45,7 +53,16 @@ public class ApiManager {
         this.params = params;
         this.apiCallback = apiCallback;
         prefs = activity.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
-        fcm_token = prefs.getString("fcm_token", "");
+
+        customProgressDialog = new Dialog_CustomProgress(activity);
+
+
+        if (prefs.getInt("panenl_value", 0) == 1) {
+            fcm_token = "12345678";
+        } else {
+            fcm_token = prefs.getString("fcm_token", "");
+        }
+
         jwd_token = prefs.getString("jwd_token", "");
 
         System.out.println("-- Req URL : " + baseURL + apiName);
@@ -53,18 +70,27 @@ public class ApiManager {
     }
 
     public void loadURL() {
+
+        customProgressDialog.showProgressDialog();
+
         AsyncHttpClient client = new AsyncHttpClient();
         client.setTimeout(DEFAULT_TIMEOUT);
         if (!TextUtils.isEmpty(fcm_token)) {
             client.addHeader("Platform", "android");
-            client.addHeader("Content-Type", "application/json");
-            client.addHeader("Accept", "application/json");
+            //client.addHeader("Content-Type", "application/json");
+            //client.addHeader("Accept", "application/json");
             client.addHeader("Devicetoken", fcm_token);
+
+            System.out.println("-- request headers : FCM token : " + fcm_token);
+            //System.out.println("-- request headers : API auth token : "+fcm_token);
 
             client.post(baseURL + apiName, params, new AsyncHttpResponseHandler() {
                         @Override
                         public void onSuccess(int statusCode, cz.msebera.android.httpclient.Header[] headers, byte[] responseBody) {
                             try {
+
+                                customProgressDialog.dismissProgressDialog();
+
                                 String content = new String(responseBody);
                                 apiCallback.onApiResponce(statusCode, 1, apiName, content);
                                 Log.d("onSuccess", "onFailure: " + content);
@@ -77,6 +103,9 @@ public class ApiManager {
                         @Override
                         public void onFailure(int statusCode, cz.msebera.android.httpclient.Header[] headers, byte[] responseBody, Throwable error) {
                             try {
+
+                                customProgressDialog.dismissProgressDialog();
+
                                 String content = new String(responseBody);
                                 Log.d("onFailure", "onFailure: " + content);
                                 apiCallback.onApiResponce(statusCode, 0, apiName, content);
@@ -93,10 +122,11 @@ public class ApiManager {
     }
 
     public void loadURLPanicBuzz() {
+
+        customProgressDialog.showProgressDialog();
+
         AsyncHttpClient client = new AsyncHttpClient();
-
         client.setTimeout(DEFAULT_TIMEOUT);
-
         try {
             KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
             trustStore.load(null, null);
@@ -110,15 +140,21 @@ public class ApiManager {
 
         if (!TextUtils.isEmpty(fcm_token) && !TextUtils.isEmpty(jwd_token)) {
             client.addHeader("Platform", "android");
-            client.addHeader("Content-Type", "application/json");
-            client.addHeader("Accept", "application/json");
+            //client.addHeader("Content-Type", "application/json");
+            //client.addHeader("Accept", "application/json");
             client.addHeader("Devicetoken", fcm_token);
             client.addHeader("Authorization", "Bearer" + jwd_token);
+
+            System.out.println("-- request headers : FCM token : " + fcm_token);
+            System.out.println("-- request headers : API auth token : " + jwd_token);
 
             client.post(baseURL + apiName, params, new AsyncHttpResponseHandler() {
                         @Override
                         public void onSuccess(int statusCode, cz.msebera.android.httpclient.Header[] headers, byte[] responseBody) {
                             try {
+
+                                customProgressDialog.dismissProgressDialog();
+
                                 String content = new String(responseBody);
                                 apiCallback.onApiResponce(statusCode, 1, apiName, content);
                                 Log.d("onSuccess", "onFailure: " + content);
@@ -131,6 +167,9 @@ public class ApiManager {
                         @Override
                         public void onFailure(int statusCode, cz.msebera.android.httpclient.Header[] headers, byte[] responseBody, Throwable error) {
                             try {
+
+                                customProgressDialog.dismissProgressDialog();
+
                                 String content = new String(responseBody);
                                 Log.d("onFailure", "onFailure: " + content);
                                 apiCallback.onApiResponce(statusCode, 0, apiName, content);
@@ -147,19 +186,28 @@ public class ApiManager {
     }
 
     public void loadGetRequests() {
+
+        customProgressDialog.showProgressDialog();
+
         AsyncHttpClient client = new AsyncHttpClient();
         client.setTimeout(DEFAULT_TIMEOUT);
         if (!TextUtils.isEmpty(fcm_token) && !TextUtils.isEmpty(jwd_token)) {
             client.addHeader("Platform", "android");
-            client.addHeader("Content-Type", "application/json");
-            client.addHeader("Accept", "application/json");
+            //client.addHeader("Content-Type", "application/json");
+            //client.addHeader("Accept", "application/json");
             client.addHeader("Devicetoken", fcm_token);
             client.addHeader("Authorization", "Bearer" + jwd_token);
+
+            System.out.println("-- request headers : FCM token : " + fcm_token);
+            System.out.println("-- request headers : API auth token : " + jwd_token);
 
             client.get(baseURL + apiName + fcm_token, params, new AsyncHttpResponseHandler() {
                         @Override
                         public void onSuccess(int statusCode, cz.msebera.android.httpclient.Header[] headers, byte[] responseBody) {
                             try {
+
+                                customProgressDialog.dismissProgressDialog();
+
                                 String content = new String(responseBody);
                                 apiCallback.onApiResponce(statusCode, 1, apiName, content);
                                 Log.d("onSuccess", "onSuccess: " + content);
@@ -172,6 +220,9 @@ public class ApiManager {
                         @Override
                         public void onFailure(int statusCode, cz.msebera.android.httpclient.Header[] headers, byte[] responseBody, Throwable error) {
                             try {
+
+                                customProgressDialog.dismissProgressDialog();
+
                                 String content = new String(responseBody);
                                 Log.d("onFailure", "onFailure: " + content);
                                 apiCallback.onApiResponce(statusCode, 0, apiName, content);
@@ -188,19 +239,30 @@ public class ApiManager {
     }
 
     public void loadNotifications() {
+
+        customProgressDialog.showProgressDialog();
+
         AsyncHttpClient client = new AsyncHttpClient();
         client.setTimeout(DEFAULT_TIMEOUT);
         if (!TextUtils.isEmpty(fcm_token) && !TextUtils.isEmpty(jwd_token)) {
             client.addHeader("Platform", "android");
-            client.addHeader("Content-Type", "application/json");
-            client.addHeader("Accept", "application/json");
+            //client.addHeader("Content-Type", "application/json");
+            // client.addHeader("Accept", "application/json");
             client.addHeader("Devicetoken", fcm_token);
             client.addHeader("Authorization", "Bearer" + jwd_token);
+
+
+            System.out.println("-- request headers : FCM token : " + fcm_token);
+            System.out.println("-- request headers : API auth token : " + jwd_token);
+
 
             client.get(baseURL + apiName, params, new AsyncHttpResponseHandler() {
                         @Override
                         public void onSuccess(int statusCode, cz.msebera.android.httpclient.Header[] headers, byte[] responseBody) {
                             try {
+
+                                customProgressDialog.dismissProgressDialog();
+
                                 String content = new String(responseBody);
                                 apiCallback.onApiResponce(statusCode, 1, apiName, content);
                                 Log.d("onSuccess", "onSuccess: " + content);
@@ -213,6 +275,9 @@ public class ApiManager {
                         @Override
                         public void onFailure(int statusCode, cz.msebera.android.httpclient.Header[] headers, byte[] responseBody, Throwable error) {
                             try {
+
+                                customProgressDialog.dismissProgressDialog();
+
                                 String content = new String(responseBody);
                                 Log.d("onFailure", "onFailure: " + content);
                                 apiCallback.onApiResponce(statusCode, 0, apiName, content);

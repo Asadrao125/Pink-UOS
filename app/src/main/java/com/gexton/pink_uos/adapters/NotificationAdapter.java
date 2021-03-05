@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.gexton.pink_uos.PanicBuzzDetailActivity;
+import com.gexton.pink_uos.PanicReportDetailActivity;
 import com.gexton.pink_uos.R;
 import com.gexton.pink_uos.model.NotificationModel;
 
@@ -48,12 +49,10 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         try {
             Date d = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH).parse(commentDate);//"2020-2-31 11:30:19"
             commentDate = new SimpleDateFormat("dd, MMM yyyy @ hh:mm a").format(d);
-            //commenceDate = commenceDate.replace(" ","\n");
         } catch (Exception e) {
             e.printStackTrace();
         }
         holder.tvateTime.setText(commentDate);
-
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -61,12 +60,14 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                 if (photos.data.type.equals("panic_buzz")) {
                     String id = photos.data.id;
                     Intent intent = new Intent(context, PanicBuzzDetailActivity.class);
-                    intent.putExtra("buzz_id", id);
+                    intent.putExtra("id", id);
+                    intent.putExtra("notif_id", photos.id);
                     context.startActivity(intent);
                 } else if (photos.data.type.equals("panic_report")) {
                     String id = photos.data.id;
-                    Intent intent = new Intent(context, PanicBuzzDetailActivity.class);
-                    intent.putExtra("panic_id", id);
+                    Intent intent = new Intent(context, PanicReportDetailActivity.class);
+                    intent.putExtra("id", id);
+                    intent.putExtra("notif_id", photos.id);
                     context.startActivity(intent);
                 }
             }

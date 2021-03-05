@@ -66,6 +66,7 @@ public class UpdateProfile extends AppCompatActivity implements ApiCallback {
     String address, city, state, zipcode;
     GPSTracker gpsTracker;
     SharedPreferences prefs;
+    SharedPreferences.Editor editor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +82,7 @@ public class UpdateProfile extends AppCompatActivity implements ApiCallback {
         apiCallback = UpdateProfile.this;
         gpsTracker = new GPSTracker(this);
         prefs = getApplicationContext().getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+        editor = getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE).edit();
 
         settingDataIntoFields();
 
@@ -111,6 +113,11 @@ public class UpdateProfile extends AppCompatActivity implements ApiCallback {
                 fName = edtFirstName.getText().toString().trim();
                 lName = edtLastName.getText().toString().trim();
                 phoneNo = edtPhone.getText().toString().trim();
+
+                editor.putString("first_name", fName);
+                editor.putString("last_name", lName);
+                editor.putString("mobile_no", phoneNo);
+                editor.apply();
 
                 if (!TextUtils.isEmpty(fName) && !TextUtils.isEmpty(lName) && !TextUtils.isEmpty(phoneNo) && !TextUtils.isEmpty(image_path) && !TextUtils.isEmpty(address)) {
                     RequestParams requestParams = new RequestParams();
@@ -217,6 +224,18 @@ public class UpdateProfile extends AppCompatActivity implements ApiCallback {
     @Override
     public void onApiResponce(int httpStatusCode, int successOrFail, String apiName, String apiResponce) {
         Log.d("update_api_response", "onApiResponce: " + apiResponce);
-        Toast.makeText(this, "" + apiResponce, Toast.LENGTH_SHORT).show();
+
+        try {
+            JSONObject jsonObject = new JSONObject(apiResponce);
+            String url = jsonObject.getJSONObject("data").getJSONObject("user").getString("image_url");
+            //Toast.makeText(getApplicationContext(), "" + url, Toast.LENGTH_SHORT).show();
+            editor.putString("image_url", url);
+            editor.apply();
+            String msg = jsonObject.getString("msg");
+            Toast.makeText(getApplicationContext(), "" + msg, Toast.LENGTH_SHORT).show();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 }

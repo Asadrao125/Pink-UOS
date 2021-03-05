@@ -12,5 +12,9 @@
     <string name="fcm_message">fcm_message</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="Open">Open</string>
+    <string name="Close">Close</string>
+    <string name="please_wait">Please Wait...</string>
+    <string name="google_maps_key">AIzaSyDkaWklyBpYdNS_aFbderSvNrIe1VJvJMY</string>
 
 </resources>

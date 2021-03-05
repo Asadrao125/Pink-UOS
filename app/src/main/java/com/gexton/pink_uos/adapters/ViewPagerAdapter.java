@@ -17,9 +17,9 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
         Fragment fragment = null;
         if (position == 0) {
-            fragment = new ReadNotificationFragment();
-        } else if (position == 1) {
             fragment = new UnreadNotificationFragment();
+        } else if (position == 1) {
+            fragment = new ReadNotificationFragment();
         }
         return fragment;
     }
@@ -33,9 +33,9 @@ public class ViewPagerAdapter extends FragmentPagerAdapter {
     public CharSequence getPageTitle(int position) {
         String title = null;
         if (position == 0) {
-            title = "Read Notification";
-        } else if (position == 1) {
             title = "Unread Notification";
+        } else if (position == 1) {
+            title = "Read Notification";
         }
         return title;
     }

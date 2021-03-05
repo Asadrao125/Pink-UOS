@@ -49,16 +49,6 @@
                 android:layout_margin="10dp"
                 android:src="@mipmap/ic_launcher" />
 
-            <TextView
-                android:textColor="@color/black"
-                android:textStyle="bold"
-                android:text="Name"
-                android:textSize="18sp"
-                android:id="@+id/tvName"
-                android:layout_marginBottom="20dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
             <LinearLayout
                 android:layout_margin="20dp"
                 android:layout_width="match_parent"
@@ -66,8 +56,8 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/tvEmail"
-                    android:text="Email"
+                    android:id="@+id/tvFirstName"
+                    android:text="First Name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
@@ -80,21 +70,7 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/tvMobile"
-                    android:text="Phone"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_margin="20dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/tvFatherName"
+                    android:id="@+id/tvLastName"
                     android:text="Father Name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
@@ -108,36 +84,8 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/tvDepartment"
-                    android:text="Department"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_margin="20dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/tvEmergency"
-                    android:text="Emergency"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_margin="20dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/tvCnic"
-                    android:text="CNIC"
+                    android:id="@+id/tvPhone"
+                    android:text="Phone"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
 
