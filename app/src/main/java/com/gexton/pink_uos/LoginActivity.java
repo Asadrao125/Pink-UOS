@@ -68,7 +68,7 @@ public class LoginActivity extends AppCompatActivity implements ApiCallback {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getApplicationContext(), ForgetAndChangePasswordActivity.class);
-                intent.putExtra("val","fp");
+                intent.putExtra("val", "fp");
                 startActivity(intent);
             }
         });
@@ -120,6 +120,13 @@ public class LoginActivity extends AppCompatActivity implements ApiCallback {
             int is_student = jsonObject.getJSONObject("data").getJSONObject("user").getInt("is_student");
             String hash_id = jsonObject.getJSONObject("data").getJSONObject("user").getString("hashid");
 
+            String uniLat = jsonObject.getJSONObject("data").getJSONObject("university_limits").getString("lat");
+            String uniLng = jsonObject.getJSONObject("data").getJSONObject("university_limits").getString("lng");
+            String radius = jsonObject.getJSONObject("data").getJSONObject("university_limits").getString("radius");
+            String apply_limits = jsonObject.getJSONObject("data").getJSONObject("university_limits").getString("apply_limits");
+
+            Log.d("uni_limits", "onApiResponce: " + uniLat + "\n" + uniLng + "\n" + radius);
+
             if (!TextUtils.isEmpty(jwd_token)) {
                 Log.d("jwd_token", "onApiResponce: " + jwd_token);
                 editor.putString("jwd_token", jwd_token);
@@ -129,6 +136,10 @@ public class LoginActivity extends AppCompatActivity implements ApiCallback {
                 editor.putString("image_url", image_url);
                 editor.putString("mobile_no", mobile_no);
                 editor.putString("hash_id", hash_id);
+                editor.putString("uniLat", uniLat);
+                editor.putString("uniLng", uniLng);
+                editor.putString("radius", radius);
+                editor.putString("apply_limits", apply_limits);
                 editor.apply();
 
                 Intent intent = new Intent(getApplicationContext(), NewHomeActivity.class);

@@ -12,6 +12,7 @@ import android.content.pm.ActivityInfo;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Address;
 import android.location.Geocoder;
+import android.location.Location;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -55,6 +56,7 @@ import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -84,12 +86,13 @@ public class FragmentHome extends Fragment implements ApiCallback {
     String first_name, last_name, phone;
     File op;
     RelativeLayout teacherLayout;
-
     TabLayout tabs;
     AlertDialog alertDialog;
     ViewPager viewPager;
     ViewPagerAdapter viewPagerAdapter;
     EditText edtMessage;
+    float distance;
+    String apply_limits;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -123,16 +126,20 @@ public class FragmentHome extends Fragment implements ApiCallback {
         first_name = prefs.getString("first_name", "");
         last_name = prefs.getString("last_name", "");
         phone = prefs.getString("mobile_no", "");
+        apply_limits = prefs.getString("apply_limits", "");
 
-        try {
-            gpsTracker = new GPSTracker(getContext());
-
-            Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
-            List<Address> addresses1 = null;
-            addresses1 = geocoder.getFromLocation(gpsTracker.getLatitude(), gpsTracker.getLongitude(), 1);
-            address = addresses1.get(0).getAddressLine(0);
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (gpsTracker.canGetLocation()) {
+            try {
+                gpsTracker = new GPSTracker(getContext());
+                Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
+                List<Address> addresses1 = null;
+                addresses1 = geocoder.getFromLocation(gpsTracker.getLatitude(), gpsTracker.getLongitude(), 1);
+                address = addresses1.get(0).getAddressLine(0);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            gpsTracker.enableLocationPopup();
         }
 
         //Setting device volume to Max
@@ -142,14 +149,41 @@ public class FragmentHome extends Fragment implements ApiCallback {
         imgReport.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                openDialog();
+                if (apply_limits.equals("false")) {
+                    Log.d("apply_limits", "apply_limits: " + apply_limits);
+                    openDialog();
+                } else {
+                    if (gpsTracker.canGetLocation()) {
+                        if (distance < 35000) {
+                            openDialog();
+                        } else {
+                            Toast.makeText(getContext(), "You are not in the premisis of university.", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        gpsTracker.enableLocationPopup();
+                    }
+                }
             }
         });
 
         imgPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                checkPermission();
+                if (apply_limits.equals("false")) {
+                    Log.d("apply_limits", "apply_limits: " + apply_limits);
+                    checkPermission();
+                } else {
+                    Log.d("apply_limits", "apply_limits: " + apply_limits);
+                    if (gpsTracker.canGetLocation()) {
+                        if (distance < 35000) {
+                            checkPermission();
+                        } else {
+                            Toast.makeText(getContext(), "You are not in the premisis of university.", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        gpsTracker.enableLocationPopup();
+                    }
+                }
             }
         });
 
@@ -294,6 +328,7 @@ public class FragmentHome extends Fragment implements ApiCallback {
     public void onStart() {
         super.onStart();
         checkUser();
+        checkPremisis();
     }
 
     private void checkPermission2() {
@@ -369,6 +404,30 @@ public class FragmentHome extends Fragment implements ApiCallback {
                         permissionToken.continuePermissionRequest();
                     }
                 }).check();
+    }
+
+    public void checkPremisis() {
+
+        if (gpsTracker.canGetLocation()) {
+            String uniLat = prefs.getString("uniLat", "");
+            String uniLng = prefs.getString("uniLng", "");
+            String radius = prefs.getString("radius", "");
+
+            if (!TextUtils.isEmpty(uniLat) && !TextUtils.isEmpty(uniLng) && !TextUtils.isEmpty(radius)) {
+
+                Location locationA = new Location("point A");
+                locationA.setLatitude(gpsTracker.getLatitude());
+                locationA.setLongitude(gpsTracker.getLongitude());
+
+                Location locationB = new Location("point B");
+                locationB.setLatitude(Double.parseDouble(uniLat));
+                locationB.setLongitude(Double.parseDouble(uniLng));
+
+                distance = locationA.distanceTo(locationB);
+                Log.d("distance", "checkPremisis: " + distance);
+
+            }
+        }
     }
 
 }

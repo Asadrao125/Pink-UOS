@@ -35,7 +35,7 @@
         <item
             android:id="@+id/changePasswordbtn"
             android:checkable="true"
-            android:icon="@drawable/ic_logout"
+            android:icon="@drawable/ic_change_pass"
             android:title="Change Password"
             app:iconTint="@color/black" />
 

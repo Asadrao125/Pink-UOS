@@ -416,7 +416,7 @@ public class HomeActivity extends AppCompatActivity implements ApiCallback {
     protected void onStart() {
         super.onStart();
         checkUser();
-        loadPanicBuzzReports();
+        //loadPanicBuzzReports();
     }
 
     private void loadPanicBuzzReports() {

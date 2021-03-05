@@ -37,6 +37,7 @@ public class ApiManager {
     public static final String API_CHANGE_PASSWORD = "change_password";
     public static final String API_FORGET_PASSWORD = "forget_password";
     public static final String API_LOGOUT = "logout";
+    public static final String API_REFRESH = "refresh";
     String MY_PREFS_NAME = "pink-uos";
     SharedPreferences prefs;
     String fcm_token;
@@ -70,9 +71,7 @@ public class ApiManager {
     }
 
     public void loadURL() {
-
         customProgressDialog.showProgressDialog();
-
         AsyncHttpClient client = new AsyncHttpClient();
         client.setTimeout(DEFAULT_TIMEOUT);
         if (!TextUtils.isEmpty(fcm_token)) {
@@ -138,8 +137,6 @@ public class ApiManager {
 
         if (!TextUtils.isEmpty(fcm_token) && !TextUtils.isEmpty(jwd_token)) {
             client.addHeader("Platform", "android");
-            //client.addHeader("Content-Type", "application/json");
-            //client.addHeader("Accept", "application/json");
             client.addHeader("Devicetoken", fcm_token);
             client.addHeader("Authorization", "Bearer" + jwd_token);
 
@@ -244,8 +241,6 @@ public class ApiManager {
         client.setTimeout(DEFAULT_TIMEOUT);
         if (!TextUtils.isEmpty(fcm_token) && !TextUtils.isEmpty(jwd_token)) {
             client.addHeader("Platform", "android");
-            //client.addHeader("Content-Type", "application/json");
-            // client.addHeader("Accept", "application/json");
             client.addHeader("Devicetoken", fcm_token);
             client.addHeader("Authorization", "Bearer" + jwd_token);
 
