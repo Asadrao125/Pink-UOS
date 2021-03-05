@@ -77,8 +77,6 @@ public class ApiManager {
         client.setTimeout(DEFAULT_TIMEOUT);
         if (!TextUtils.isEmpty(fcm_token)) {
             client.addHeader("Platform", "android");
-            //client.addHeader("Content-Type", "application/json");
-            //client.addHeader("Accept", "application/json");
             client.addHeader("Devicetoken", fcm_token);
 
             System.out.println("-- request headers : FCM token : " + fcm_token);

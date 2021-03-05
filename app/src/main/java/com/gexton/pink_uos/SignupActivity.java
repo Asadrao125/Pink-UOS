@@ -174,7 +174,6 @@ public class SignupActivity extends AppCompatActivity implements ApiCallback {
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
-            requestParams.setUseJsonStreamer(true);
 
             ApiManager apiManager = new ApiManager(SignupActivity.this, "post", ApiManager.API_REGISTER_USER, requestParams, apiCallback);
             apiManager.loadURL();

@@ -149,26 +149,6 @@ public class FragmentHome extends Fragment implements ApiCallback {
         imgPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               /* if (mediaPlayer.isPlaying()) {
-                    imgPlay.setImageResource(R.drawable.play123);
-                    mediaPlayer.stop();
-                    mediaPlayer.reset();
-                } else {
-                    imgPlay.setImageResource(R.drawable.pause);
-                    mediaPlayer = MediaPlayer.create(getContext(), R.raw.alert_tone);
-                    mediaPlayer.start();
-                    if (gpsTracker.canGetLocation()) {
-
-                        gpsTracker = new GPSTracker(getContext());
-
-                        RequestParams requestParams = new RequestParams();
-                        requestParams.put("address", address);
-                        requestParams.put("lat", gpsTracker.getLatitude() + "");
-                        requestParams.put("lng", gpsTracker.getLongitude() + "");
-                        ApiManager apiManager = new ApiManager((Activity) getContext(), "post", ApiManager.API_PANIC_BUZZ, requestParams, apiCallback);
-                        apiManager.loadURLPanicBuzz();
-                    }
-                }*/
                 checkPermission();
             }
         });
