@@ -86,7 +86,6 @@ public class LoginActivity extends AppCompatActivity implements ApiCallback {
     }
 
     private void loginUser(String email, String password) {
-
         if (TextUtils.isEmpty(email)) {
             edtEmail.setError("Empty");
             edtEmail.requestFocus();
@@ -97,7 +96,6 @@ public class LoginActivity extends AppCompatActivity implements ApiCallback {
             RequestParams requestParams = new RequestParams();
             requestParams.put("email", email);
             requestParams.put("password", password);
-            requestParams.setUseJsonStreamer(true);
             ApiManager apiManager = new ApiManager(LoginActivity.this, "post", ApiManager.API_LOGIN_USER, requestParams, apiCallback);
             apiManager.loadURL();
         }

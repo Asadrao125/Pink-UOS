@@ -259,7 +259,6 @@ public class HomeActivity extends AppCompatActivity implements ApiCallback {
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
-                //requestParams.setUseJsonStreamer(true);
                 ApiManager apiManager = new ApiManager(HomeActivity.this, "post", ApiManager.API_PANIC_REPORT, requestParams, apiCallback);
                 apiManager.loadURLPanicBuzz();
                 Toast.makeText(HomeActivity.this, "Complaint Submitted", Toast.LENGTH_SHORT).show();

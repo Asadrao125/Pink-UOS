@@ -88,9 +88,7 @@ public class NewHomeActivity extends AppCompatActivity implements NavigationView
         };
 
         replaceFragment(new FragmentHome());
-
         navigationView.getMenu().getItem(0).setChecked(true);
-
     }
 
     @Override
@@ -209,6 +207,10 @@ public class NewHomeActivity extends AppCompatActivity implements NavigationView
         editor.remove("fcm_token");
         editor.remove("panenl_value");
         editor.remove("hash_id");
+        editor.remove("uniLat");
+        editor.remove("uniLng");
+        editor.remove("radius");
+        editor.remove("apply_limits");
         editor.apply();
         startActivity(new Intent(getApplicationContext(), LoginActivity.class));
         finish();
