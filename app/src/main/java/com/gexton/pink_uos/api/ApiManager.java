@@ -57,7 +57,6 @@ public class ApiManager {
 
         customProgressDialog = new Dialog_CustomProgress(activity);
 
-
         if (prefs.getInt("panenl_value", 0) == 1) {
             fcm_token = "12345678";
         } else {
@@ -244,10 +243,8 @@ public class ApiManager {
             client.addHeader("Devicetoken", fcm_token);
             client.addHeader("Authorization", "Bearer" + jwd_token);
 
-
             System.out.println("-- request headers : FCM token : " + fcm_token);
             System.out.println("-- request headers : API auth token : " + jwd_token);
-
 
             client.get(baseURL + apiName, params, new AsyncHttpResponseHandler() {
                         @Override

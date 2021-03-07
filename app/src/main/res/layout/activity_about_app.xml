@@ -12,14 +12,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/pink"
-        android:padding="20dp">
+        android:padding="10dp">
 
         <ImageView
             android:id="@+id/imgBack"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_marginRight="10dp"
+            android:padding="10dp"
             android:src="@drawable/back" />
 
         <TextView
@@ -29,7 +29,7 @@
             android:layout_toEndOf="@id/imgBack"
             android:text="About App"
             android:textColor="@color/white"
-            android:textSize="16sp" />
+            android:textSize="18sp" />
 
     </RelativeLayout>
 
@@ -65,15 +65,17 @@
                 android:layout_gravity="center"
                 android:layout_marginBottom="10dp"
                 android:layout_marginTop="10dp"
-                android:text="@string/app_name"
+                android:text="Pink - UOS"
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:textColor="@color/pink" />
 
             <TextView
+                android:layout_margin="20dp"
                 android:id="@+id/tvAboutApp"
                 android:layout_width="wrap_content"
+                android:lineHeight="30dp"
                 android:layout_height="wrap_content"
-                android:text="text" />
+                android:text="This app is specifically designed for the female students, faculty members and admin staff of the University of Sindh, Jamshoro to report any harrasment incident to the authorities in real time. This app will help to make campus safe for all the females and Study and work with respect and confidence." />
 
         </LinearLayout>
 

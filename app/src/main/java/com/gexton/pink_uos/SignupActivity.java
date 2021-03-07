@@ -114,9 +114,10 @@ public class SignupActivity extends AppCompatActivity implements ApiCallback {
         String father_name = edtFatherName.getText().toString().trim();
         String cnic = edtCNIC.getText().toString().trim();
 
-        if (image_path == null) {
+        /*if (image_path == null) {
             Toast.makeText(SignupActivity.this, "Please Select Image", Toast.LENGTH_SHORT).show();
-        } else if (TextUtils.isEmpty(first_name)) {
+        } else */
+        if (TextUtils.isEmpty(first_name)) {
             edtFirstName.setError("Empty");
             edtFirstName.requestFocus();
         } else if (TextUtils.isEmpty(last_name)) {
@@ -137,10 +138,10 @@ public class SignupActivity extends AppCompatActivity implements ApiCallback {
         } else if (TextUtils.isEmpty(department)) {
             edtDepartment.setError("Empty");
             edtDepartment.requestFocus();
-        } else if (TextUtils.isEmpty(emergency)) {
+        } /*else if (TextUtils.isEmpty(emergency)) {
             edtEmergency.setError("Empty");
             edtEmergency.requestFocus();
-        } else if (TextUtils.isEmpty(father_name)) {
+        }*/ else if (TextUtils.isEmpty(father_name)) {
             edtFatherName.setError("Empty");
             edtFatherName.requestFocus();
         } else if (TextUtils.isEmpty(cnic)) {
@@ -167,14 +168,17 @@ public class SignupActivity extends AppCompatActivity implements ApiCallback {
             requestParams.put("department", department);
             requestParams.put("emergency_contact", emergency);
             requestParams.put("cnic", cnic);
-            try {
-                Log.d("image_path", "image path: " + image_path);
-                File file = new File(image_path);
-                requestParams.put("profile_image", file);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
+            if (!TextUtils.isEmpty(image_path)) {
+                try {
+                    Log.d("image_path", "image path: " + image_path);
+                    File file = new File(image_path);
+                    requestParams.put("profile_image", file);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                image_path = null;
             }
-
             ApiManager apiManager = new ApiManager(SignupActivity.this, "post", ApiManager.API_REGISTER_USER, requestParams, apiCallback);
             apiManager.loadURL();
         }

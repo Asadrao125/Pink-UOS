@@ -40,6 +40,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gexton.pink_uos.HomeActivity;
+import com.gexton.pink_uos.LoginActivity;
 import com.gexton.pink_uos.R;
 import com.gexton.pink_uos.adapters.ViewPagerAdapter;
 import com.gexton.pink_uos.api.ApiCallback;
@@ -93,6 +94,7 @@ public class FragmentHome extends Fragment implements ApiCallback {
     EditText edtMessage;
     float distance;
     String apply_limits;
+    SharedPreferences.Editor editor;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -114,6 +116,7 @@ public class FragmentHome extends Fragment implements ApiCallback {
         apiCallback = FragmentHome.this;
         prefs = getContext().getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
         layoutStudent = view.findViewById(R.id.layoutStudent);
+        editor = getContext().getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE).edit();
 
         teacherLayout = view.findViewById(R.id.teacherLayout);
         tabs = view.findViewById(R.id.tabs);
@@ -195,6 +198,20 @@ public class FragmentHome extends Fragment implements ApiCallback {
         Log.d("Home_Activity_Response", "onApiResponce: " + apiResponce);
         try {
             JSONObject jsonObject = new JSONObject(apiResponce);
+            String token = jsonObject.getJSONObject("data").getString("token");
+            String uniLat = jsonObject.getJSONObject("data").getJSONObject("university_limits").getString("lat");
+            String uniLng = jsonObject.getJSONObject("data").getJSONObject("university_limits").getString("lng");
+            String radius = jsonObject.getJSONObject("data").getJSONObject("university_limits").getString("radius");
+            String apply_limits2 = jsonObject.getJSONObject("data").getJSONObject("university_limits").getString("apply_limits");
+
+            Log.d("jwd_token", "onApiResponce: " + token);
+
+            editor.putString("jwd_token", token);
+            editor.putString("uniLat", uniLat);
+            editor.putString("uniLng", uniLng);
+            editor.putString("radius", radius);
+            editor.putString("apply_limits", apply_limits2);
+            editor.apply();
             String msg = jsonObject.getString("msg");
             Toast.makeText(getContext(), "" + msg, Toast.LENGTH_SHORT).show();
         } catch (JSONException e) {
@@ -245,7 +262,7 @@ public class FragmentHome extends Fragment implements ApiCallback {
         btnSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                /*RequestParams requestParams = new RequestParams();
+                 /*RequestParams requestParams = new RequestParams();
                 requestParams.put("address", address);
                 requestParams.put("lat", gpsTracker.getLatitude() + "");
                 requestParams.put("lng", gpsTracker.getLongitude() + "");
@@ -329,6 +346,13 @@ public class FragmentHome extends Fragment implements ApiCallback {
         super.onStart();
         checkUser();
         checkPremisis();
+        //refreshToken();
+    }
+
+    private void refreshToken() {
+        RequestParams requestParams = new RequestParams();
+        ApiManager apiManager = new ApiManager((Activity) getContext(), "get", ApiManager.API_REFRESH, requestParams, apiCallback);
+        apiManager.loadNotifications();
     }
 
     private void checkPermission2() {
@@ -340,6 +364,17 @@ public class FragmentHome extends Fragment implements ApiCallback {
                     public void onPermissionsChecked(MultiplePermissionsReport multiplePermissionsReport) {
                         if (multiplePermissionsReport.areAllPermissionsGranted()) {
                             RequestParams requestParams = new RequestParams();
+
+                            try {
+                                gpsTracker = new GPSTracker(getContext());
+                                Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
+                                List<Address> addresses1 = null;
+                                addresses1 = geocoder.getFromLocation(gpsTracker.getLatitude(), gpsTracker.getLongitude(), 1);
+                                address = addresses1.get(0).getAddressLine(0);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+
                             requestParams.put("address", address);
                             requestParams.put("lat", gpsTracker.getLatitude() + "");
                             requestParams.put("lng", gpsTracker.getLongitude() + "");
@@ -354,9 +389,9 @@ public class FragmentHome extends Fragment implements ApiCallback {
                             ApiManager apiManager = new ApiManager((Activity) getContext(), "post", ApiManager.API_PANIC_REPORT, requestParams, apiCallback);
                             apiManager.loadURLPanicBuzz();
                             alertDialog.dismiss();
-                        } else {
+                        } /*else {
                             gpsTracker.enableLocationPopup();
-                        }
+                        }*/
                     }
 
                     @Override
@@ -384,7 +419,16 @@ public class FragmentHome extends Fragment implements ApiCallback {
                                 mediaPlayer.start();
                                 if (gpsTracker.canGetLocation()) {
 
-                                    gpsTracker = new GPSTracker(getContext());
+
+                                    try {
+                                        gpsTracker = new GPSTracker(getContext());
+                                        Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
+                                        List<Address> addresses1 = null;
+                                        addresses1 = geocoder.getFromLocation(gpsTracker.getLatitude(), gpsTracker.getLongitude(), 1);
+                                        address = addresses1.get(0).getAddressLine(0);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
 
                                     RequestParams requestParams = new RequestParams();
                                     requestParams.put("address", address);
@@ -394,9 +438,9 @@ public class FragmentHome extends Fragment implements ApiCallback {
                                     apiManager.loadURLPanicBuzz();
                                 }
                             }
-                        } else {
+                        } /*else {
                             gpsTracker.enableLocationPopup();
-                        }
+                        }*/
                     }
 
                     @Override

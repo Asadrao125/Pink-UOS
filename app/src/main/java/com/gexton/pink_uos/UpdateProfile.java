@@ -9,6 +9,7 @@ import droidninja.filepicker.FilePickerBuilder;
 import droidninja.filepicker.FilePickerConst;
 import droidninja.filepicker.utils.ContentUriUtils;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -19,6 +20,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Address;
 import android.location.Geocoder;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -36,6 +38,11 @@ import com.gexton.pink_uos.api.ApiManager;
 import com.gexton.pink_uos.model.LoginResponse;
 import com.gexton.pink_uos.utils.GPSTracker;
 import com.google.gson.Gson;
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.MultiplePermissionsReport;
+import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.PermissionRequest;
+import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.loopj.android.http.RequestParams;
 import com.squareup.picasso.Picasso;
 
@@ -86,17 +93,19 @@ public class UpdateProfile extends AppCompatActivity implements ApiCallback {
 
         settingDataIntoFields();
 
-        Geocoder geocoder;
-        List<Address> addresses;
-        geocoder = new Geocoder(this, Locale.getDefault());
-        try {
-            addresses = geocoder.getFromLocation(gpsTracker.getLatitude(), gpsTracker.getLongitude(), 1);
-            address = addresses.get(0).getAddressLine(0);
-            city = addresses.get(0).getLocality();
-            state = addresses.get(0).getAdminArea();
-            zipcode = addresses.get(0).getPostalCode();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (gpsTracker.canGetLocation()) {
+            Geocoder geocoder;
+            List<Address> addresses;
+            geocoder = new Geocoder(this, Locale.getDefault());
+            try {
+                addresses = geocoder.getFromLocation(gpsTracker.getLatitude(), gpsTracker.getLongitude(), 1);
+                address = addresses.get(0).getAddressLine(0);
+                city = addresses.get(0).getLocality();
+                state = addresses.get(0).getAdminArea();
+                zipcode = addresses.get(0).getPostalCode();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         imgBack.setOnClickListener(new View.OnClickListener() {
@@ -109,33 +118,56 @@ public class UpdateProfile extends AppCompatActivity implements ApiCallback {
         btnUpdate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (gpsTracker.canGetLocation()) {
+                    fName = edtFirstName.getText().toString().trim();
+                    lName = edtLastName.getText().toString().trim();
+                    phoneNo = edtPhone.getText().toString().trim();
 
-                fName = edtFirstName.getText().toString().trim();
-                lName = edtLastName.getText().toString().trim();
-                phoneNo = edtPhone.getText().toString().trim();
+                    editor.putString("first_name", fName);
+                    editor.putString("last_name", lName);
+                    editor.putString("mobile_no", phoneNo);
+                    editor.apply();
 
-                editor.putString("first_name", fName);
-                editor.putString("last_name", lName);
-                editor.putString("mobile_no", phoneNo);
-                editor.apply();
+                    if (!TextUtils.isEmpty(fName) && !TextUtils.isEmpty(lName) && !TextUtils.isEmpty(phoneNo) && !TextUtils.isEmpty(address)) {
+                        RequestParams requestParams = new RequestParams();
 
-                if (!TextUtils.isEmpty(fName) && !TextUtils.isEmpty(lName) && !TextUtils.isEmpty(phoneNo) && !TextUtils.isEmpty(image_path) && !TextUtils.isEmpty(address)) {
-                    RequestParams requestParams = new RequestParams();
-                    requestParams.put("first_name", fName);
-                    requestParams.put("last_name", lName);
-                    requestParams.put("address", address);
-                    requestParams.put("city", city);
-                    requestParams.put("state", state);
-                    requestParams.put("zipcode", zipcode);
-                    requestParams.put("phone_no", phoneNo);
-                    try {
-                        File file = new File(image_path);
-                        requestParams.put("profile_image", file);
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
+                        Geocoder geocoder;
+                        List<Address> addresses;
+                        geocoder = new Geocoder(UpdateProfile.this, Locale.getDefault());
+                        try {
+                            addresses = geocoder.getFromLocation(gpsTracker.getLatitude(), gpsTracker.getLongitude(), 1);
+                            address = addresses.get(0).getAddressLine(0);
+                            city = addresses.get(0).getLocality();
+                            state = addresses.get(0).getAdminArea();
+                            zipcode = addresses.get(0).getPostalCode();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                        requestParams.put("first_name", fName);
+                        requestParams.put("last_name", lName);
+                        requestParams.put("address", address);
+                        requestParams.put("city", city);
+                        requestParams.put("state", state);
+                        requestParams.put("zipcode", zipcode);
+                        requestParams.put("phone_no", phoneNo);
+                        if (!TextUtils.isEmpty(image_path)) {
+                            try {
+                                File file = new File(image_path);
+                                requestParams.put("profile_image", file);
+                            } catch (FileNotFoundException e) {
+                                e.printStackTrace();
+                            }
+                        } else {
+                            requestParams.put("profile_image", "");
+                        }
+                        ApiManager apiManager = new ApiManager(UpdateProfile.this, "post", ApiManager.API_UPDATE_PROFILE, requestParams, apiCallback);
+                        apiManager.loadURLPanicBuzz();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Empty Field", Toast.LENGTH_SHORT).show();
                     }
-                    ApiManager apiManager = new ApiManager(UpdateProfile.this, "post", ApiManager.API_UPDATE_PROFILE, requestParams, apiCallback);
-                    apiManager.loadURLPanicBuzz();
+                } else {
+                    gpsTracker.enableLocationPopup();
                 }
             }
         });
@@ -143,7 +175,7 @@ public class UpdateProfile extends AppCompatActivity implements ApiCallback {
         profileImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                pickPhoto();
+                checkPermission();
             }
         });
     }
@@ -237,5 +269,24 @@ public class UpdateProfile extends AppCompatActivity implements ApiCallback {
             e.printStackTrace();
         }
 
+    }
+
+    private void checkPermission() {
+        Dexter.withContext(getApplicationContext())
+                .withPermissions(Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE)
+                .withListener(new MultiplePermissionsListener() {
+                    @Override
+                    public void onPermissionsChecked(MultiplePermissionsReport multiplePermissionsReport) {
+                        if (multiplePermissionsReport.areAllPermissionsGranted()) {
+                            pickPhoto();
+                        }
+                    }
+
+                    @Override
+                    public void onPermissionRationaleShouldBeShown(List<PermissionRequest> list, PermissionToken permissionToken) {
+                        permissionToken.continuePermissionRequest();
+                    }
+                }).check();
     }
 }

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Pink-UOS</string>
+    <string name="app_name">Pink Safety</string>
     <string name="gps_is_setting">Enable Location</string>
     <string name="gps_not_enabled_msg_show_alert_gps_dialog">Please enable location</string>
     <string name="settings">Setting</string>

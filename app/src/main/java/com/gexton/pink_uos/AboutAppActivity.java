@@ -48,6 +48,5 @@ public class AboutAppActivity extends AppCompatActivity {
 
         tvAboutApp.setText("This app is specifically designed for the female students, faculty members and admin staff of the University of Sindh, Jamshoro to report any harrasment incident to the authorities in real time. This app will help to make campus safe for all the females and Study and work with respect and confidence.");
 
-
     }
 }

@@ -114,7 +114,7 @@ public class NewHomeActivity extends AppCompatActivity implements NavigationView
         }
     }
 
-   /* private void checkUser() {
+     /* private void checkUser() {
         checkPermission();
         int is_student = prefs.getInt("panenl_value", 10000);
         if (is_student == 0) {
@@ -128,6 +128,13 @@ public class NewHomeActivity extends AppCompatActivity implements NavigationView
     protected void onStart() {
         super.onStart();
         checkPermission();
+        checkLocation();
+    }
+
+    private void checkLocation() {
+        if (!gpsTracker.canGetLocation()) {
+            gpsTracker.enableLocationPopup();
+        }
     }
 
     @Override
@@ -182,8 +189,6 @@ public class NewHomeActivity extends AppCompatActivity implements NavigationView
                     public void onPermissionsChecked(MultiplePermissionsReport multiplePermissionsReport) {
                         if (multiplePermissionsReport.areAllPermissionsGranted()) {
 
-                        } else {
-                            gpsTracker.enableLocationPopup();
                         }
                     }
 

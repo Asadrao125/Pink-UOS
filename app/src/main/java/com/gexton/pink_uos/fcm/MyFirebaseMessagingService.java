@@ -14,6 +14,7 @@ import android.util.Log;
 import android.widget.RemoteViews;
 
 import com.gexton.pink_uos.HomeActivity;
+import com.gexton.pink_uos.NewHomeActivity;
 import com.gexton.pink_uos.R;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -38,7 +39,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             //{type=simple, sound=1, title=New Panic Buzz Added, vibrate=1, message=New Panic Buzz added by Asad Rao Rajput From Unnamed Road, Latifabad Unit 7 Latifabad, Hyderabad, Sindh 71000, Pakistan}
 
             sendNotification(remoteMessage.getData().get("message"), remoteMessage.getData().get("title"),
-                    HomeActivity.class);
+                    NewHomeActivity.class);
         }
 
         if (remoteMessage.getNotification() != null) {
