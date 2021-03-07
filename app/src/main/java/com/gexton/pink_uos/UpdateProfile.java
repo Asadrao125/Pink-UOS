@@ -150,7 +150,7 @@ public class UpdateProfile extends AppCompatActivity implements ApiCallback {
                         requestParams.put("city", city);
                         requestParams.put("state", state);
                         requestParams.put("zipcode", zipcode);
-                        requestParams.put("phone_no", phoneNo);
+                        requestParams.put("phone_no", edtPhone.getText().toString().trim());
                         if (!TextUtils.isEmpty(image_path)) {
                             try {
                                 File file = new File(image_path);

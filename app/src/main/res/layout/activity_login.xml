@@ -12,6 +12,7 @@
        android:layout_height="match_parent">
 
        <LinearLayout
+           android:layout_marginBottom="10dp"
            android:layout_width="match_parent"
            android:layout_height="wrap_content"
            android:layout_centerInParent="true"
@@ -21,7 +22,6 @@
                android:layout_gravity="center"
                android:layout_width="150dp"
                android:layout_height="150dp"
-               android:layout_marginBottom="10dp"
                android:src="@mipmap/app_icon" />
 
            <TextView
@@ -35,13 +35,12 @@
                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                android:layout_width="match_parent"
                android:layout_height="wrap_content"
-               android:layout_marginTop="20dp">
+               android:layout_marginTop="10dp">
 
                <EditText
                    android:id="@+id/edtEmail"
                    android:layout_width="match_parent"
                    android:layout_height="wrap_content"
-                   android:drawablePadding="10dp"
                    android:hint="Email"
                    android:inputType="textEmailAddress" />
 
@@ -51,7 +50,7 @@
                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                android:layout_width="match_parent"
                android:layout_height="wrap_content"
-               android:layout_marginTop="20dp"
+               android:layout_marginTop="10dp"
                app:passwordToggleEnabled="true">
 
                <EditText
@@ -59,7 +58,6 @@
                    android:layout_width="match_parent"
                    android:layout_height="wrap_content"
                    android:inputType="textPassword"
-                   android:drawablePadding="10dp"
                    android:hint="Password" />
 
            </com.google.android.material.textfield.TextInputLayout>

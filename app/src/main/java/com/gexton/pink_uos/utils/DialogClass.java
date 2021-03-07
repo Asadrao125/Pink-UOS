@@ -21,7 +21,7 @@ public class DialogClass {
         alertbox.setPositiveButton(positiveButtonText, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-
+                dialogInterface.dismiss();
             }
         });
         alertbox.show();

@@ -9,6 +9,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Address;
 import android.location.Geocoder;
@@ -26,6 +28,8 @@ import droidninja.filepicker.FilePickerBuilder;
 import droidninja.filepicker.FilePickerConst;
 import droidninja.filepicker.utils.ContentUriUtils;
 
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -59,6 +63,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Text;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -95,6 +100,7 @@ public class FragmentHome extends Fragment implements ApiCallback {
     float distance;
     String apply_limits;
     SharedPreferences.Editor editor;
+    File file1;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -149,7 +155,7 @@ public class FragmentHome extends Fragment implements ApiCallback {
         AudioManager am = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
         am.setStreamVolume(AudioManager.STREAM_MUSIC, am.getStreamMaxVolume(AudioManager.STREAM_MUSIC), 0);
 
-        imgReport.setOnClickListener(new View.OnClickListener() {
+        /*imgReport.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (apply_limits.equals("false")) {
@@ -167,7 +173,7 @@ public class FragmentHome extends Fragment implements ApiCallback {
                     }
                 }
             }
-        });
+        });*/
 
         imgPlay.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -187,6 +193,13 @@ public class FragmentHome extends Fragment implements ApiCallback {
                         gpsTracker.enableLocationPopup();
                     }
                 }
+            }
+        });
+
+        imgReport.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                open();
             }
         });
 
@@ -235,6 +248,8 @@ public class FragmentHome extends Fragment implements ApiCallback {
         tvLocation.setText(address);
         tvName.setText(first_name + " " + last_name);
         tvPhone.setText(phone);
+
+        btnCaptureImage.setVisibility(View.GONE);
 
         alertDialogBuilder.setView(view);
         alertDialog = alertDialogBuilder.create();
@@ -315,7 +330,7 @@ public class FragmentHome extends Fragment implements ApiCallback {
         }
     }
 
-    @Override
+    /*  @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
@@ -339,6 +354,46 @@ public class FragmentHome extends Fragment implements ApiCallback {
                 }
             }
         }
+    }*/
+
+    public void open() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(intent, 123);
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 123 && data != null) {
+            Toast.makeText(getContext(), "" + data.getExtras().get("data"), Toast.LENGTH_SHORT).show();
+            openDialog();
+
+            Bitmap photo = (Bitmap) data.getExtras().get("data");
+            Uri tempUri = getImageUri(getContext(), photo);
+
+            file1 = new File(getRealPathFromURI(tempUri));
+
+            imageSelected.setVisibility(View.VISIBLE);
+            Picasso.get().load(file1).into(imageSelected);
+
+        } else {
+            Toast.makeText(getContext(), "Image Not Captured", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    public Uri getImageUri(Context inContext, Bitmap inImage) {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
+        return Uri.parse(path);
+    }
+
+    public String getRealPathFromURI(Uri uri) {
+        Cursor cursor = getContext().getContentResolver().query(uri, null, null, null, null);
+        cursor.moveToFirst();
+        int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+        return cursor.getString(idx);
     }
 
     @Override
@@ -381,7 +436,7 @@ public class FragmentHome extends Fragment implements ApiCallback {
                             requestParams.put("msg", edtMessage.getText().toString().trim());
                             try {
                                 File file = new File(image_path);
-                                requestParams.put("image", file);
+                                requestParams.put("image", file1);
                                 Log.d("image_path", image_path);
                             } catch (FileNotFoundException e) {
                                 e.printStackTrace();

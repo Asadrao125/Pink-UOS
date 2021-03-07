@@ -13,7 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PinkUOS"
         android:usesCleartextTraffic="true">
-        <activity android:name=".AboutAppActivity"></activity>
+        <activity android:name=".AboutAppActivity" />
         <activity android:name=".PanicReportDetailActivity" />
         <activity android:name=".ForgetAndChangePasswordActivity" />
         <activity android:name=".NewHomeActivity" />
@@ -23,7 +23,8 @@
         <activity android:name=".ViewProfile" />
         <activity android:name=".HomeActivity" />
         <activity android:name=".SignupActivity" />
-        <activity android:name=".LoginActivity" />
+        <activity android:name=".LoginActivity"
+            android:windowSoftInputMode="adjustResize"></activity>
         <activity android:name=".SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -69,6 +70,7 @@
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
+
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />

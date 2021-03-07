@@ -155,32 +155,40 @@ public class SignupActivity extends AppCompatActivity implements ApiCallback {
             edtConfirmPassword.requestFocus();
         } else {
 
-            RequestParams requestParams = new RequestParams();
-            requestParams.put("first_name", first_name);
-            requestParams.put("email", email);
-            requestParams.put("password", password);
-            requestParams.put("password_confirmation", confirm_password);
-            requestParams.put("last_name", last_name);
-            requestParams.put("roll_no", roll_no);
-            requestParams.put("mobile_no", phone);
-            requestParams.put("enroll_year", enroll_year);
-            requestParams.put("father_name", father_name);
-            requestParams.put("department", department);
-            requestParams.put("emergency_contact", emergency);
-            requestParams.put("cnic", cnic);
-            if (!TextUtils.isEmpty(image_path)) {
-                try {
-                    Log.d("image_path", "image path: " + image_path);
-                    File file = new File(image_path);
-                    requestParams.put("profile_image", file);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
+            if (edtPassword.getText().toString().trim().equals(edtConfirmPassword.getText().toString().trim())) {
+                RequestParams requestParams = new RequestParams();
+                requestParams.put("first_name", first_name);
+                requestParams.put("email", email);
+                requestParams.put("password", password);
+                requestParams.put("password_confirmation", confirm_password);
+                requestParams.put("last_name", last_name);
+                requestParams.put("roll_no", roll_no);
+                requestParams.put("mobile_no", phone);
+                requestParams.put("enroll_year", enroll_year);
+                requestParams.put("father_name", father_name);
+                requestParams.put("department", department);
+                requestParams.put("emergency_contact", emergency);
+                requestParams.put("cnic", cnic);
+                if (!TextUtils.isEmpty(image_path)) {
+                    try {
+                        Log.d("image_path", "image path: " + image_path);
+                        File file = new File(image_path);
+                        requestParams.put("profile_image", file);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    image_path = null;
                 }
+                ApiManager apiManager = new ApiManager(SignupActivity.this, "post", ApiManager.API_REGISTER_USER, requestParams, apiCallback);
+                apiManager.loadURL();
             } else {
-                image_path = null;
+                edtPassword.setError("Password Not Matched");
+                edtConfirmPassword.setError("Password Not Matched");
+                edtPassword.requestFocus();
+                edtConfirmPassword.requestFocus();
             }
-            ApiManager apiManager = new ApiManager(SignupActivity.this, "post", ApiManager.API_REGISTER_USER, requestParams, apiCallback);
-            apiManager.loadURL();
+
         }
     }
 

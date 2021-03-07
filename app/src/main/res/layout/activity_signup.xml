@@ -61,6 +61,7 @@
                    android:id="@+id/edtFirstName"
                    android:layout_width="match_parent"
                    android:layout_height="wrap_content"
+                   android:inputType="textCapSentences"
                    android:hint="First Name" />
 
            </com.google.android.material.textfield.TextInputLayout>
@@ -69,11 +70,12 @@
                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                android:layout_width="match_parent"
                android:layout_height="wrap_content"
-               android:layout_marginTop="20dp">
+               android:layout_marginTop="10dp">
 
                <EditText
                    android:id="@+id/edtLastName"
                    android:layout_width="match_parent"
+                   android:inputType="textCapSentences"
                    android:layout_height="wrap_content"
                    android:hint="Last Name" />
 
@@ -83,7 +85,7 @@
                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                android:layout_width="match_parent"
                android:layout_height="wrap_content"
-               android:layout_marginTop="20dp">
+               android:layout_marginTop="10dp">
 
                <EditText
                    android:id="@+id/edtRollNo"
@@ -97,10 +99,11 @@
                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                android:layout_width="match_parent"
                android:layout_height="wrap_content"
-               android:layout_marginTop="20dp">
+               android:layout_marginTop="10dp">
 
                <EditText
                    android:id="@+id/edtPhone"
+                   android:maxLength="11"
                    android:layout_width="match_parent"
                    android:layout_height="wrap_content"
                    android:hint="Phone"
@@ -112,7 +115,7 @@
                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                android:layout_width="match_parent"
                android:layout_height="wrap_content"
-               android:layout_marginTop="20dp">
+               android:layout_marginTop="10dp">
 
                <EditText
                    android:id="@+id/edtEmail"
@@ -127,7 +130,7 @@
                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                android:layout_width="match_parent"
                android:layout_height="wrap_content"
-               android:layout_marginTop="20dp">
+               android:layout_marginTop="10dp">
 
                <EditText
                    android:id="@+id/edtEnrolYear"
@@ -143,12 +146,13 @@
                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                android:layout_width="match_parent"
                android:layout_height="wrap_content"
-               android:layout_marginTop="20dp">
+               android:layout_marginTop="10dp">
 
                <EditText
                    android:id="@+id/edtDepartment"
                    android:layout_width="match_parent"
                    android:layout_height="wrap_content"
+                   android:inputType="textCapSentences"
                    android:hint="Department" />
 
            </com.google.android.material.textfield.TextInputLayout>
@@ -157,7 +161,7 @@
                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                android:layout_width="match_parent"
                android:layout_height="wrap_content"
-               android:layout_marginTop="20dp">
+               android:layout_marginTop="10dp">
 
                <EditText
                    android:id="@+id/edtEmergencyContact"
@@ -172,12 +176,13 @@
                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                android:layout_width="match_parent"
                android:layout_height="wrap_content"
-               android:layout_marginTop="20dp">
+               android:layout_marginTop="10dp">
 
                <EditText
                    android:id="@+id/edtFatherName"
                    android:layout_width="match_parent"
                    android:layout_height="wrap_content"
+                   android:inputType="textCapSentences"
                    android:hint="Father Name" />
 
            </com.google.android.material.textfield.TextInputLayout>
@@ -186,7 +191,7 @@
                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                android:layout_width="match_parent"
                android:layout_height="wrap_content"
-               android:layout_marginTop="20dp">
+               android:layout_marginTop="10dp">
 
                <EditText
                    android:id="@+id/edtCnic"
@@ -203,7 +208,7 @@
                android:layout_width="match_parent"
                app:passwordToggleEnabled="true"
                android:layout_height="wrap_content"
-               android:layout_marginTop="20dp">
+               android:layout_marginTop="10dp">
 
                <EditText
                    android:id="@+id/edtPassword"
@@ -218,7 +223,7 @@
                android:layout_width="match_parent"
                app:passwordToggleEnabled="true"
                android:layout_height="wrap_content"
-               android:layout_marginTop="20dp">
+               android:layout_marginTop="10dp">
 
                <EditText
                    android:id="@+id/edtConfirmPassword"
