@@ -114,7 +114,7 @@ public class PanicBuzzDetailActivity extends AppCompatActivity implements ApiCal
             }
 
             tvUsername.setText(first_name + " " + last_name);
-            Picasso.get().load(imageUserUrl).placeholder(R.drawable.ic_launcher_background).into(imageUser);
+            Picasso.get().load(imageUserUrl).placeholder(R.drawable.placeholder).into(imageUser);
             createdAt.setText(commentDate);
 
             if (!TextUtils.isEmpty(address)) {

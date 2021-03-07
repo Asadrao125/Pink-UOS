@@ -199,7 +199,7 @@ public class FragmentHome extends Fragment implements ApiCallback {
         imgReport.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                open();
+                checkPermission2();
             }
         });
 
@@ -292,7 +292,33 @@ public class FragmentHome extends Fragment implements ApiCallback {
                 ApiManager apiManager = new ApiManager((Activity) getContext(), "post", ApiManager.API_PANIC_REPORT, requestParams, apiCallback);
                 apiManager.loadURLPanicBuzz();
                 alertDialog.dismiss();*/
-                checkPermission2();
+                //checkPermission2();
+                RequestParams requestParams = new RequestParams();
+
+                try {
+                    gpsTracker = new GPSTracker(getContext());
+                    Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
+                    List<Address> addresses1 = null;
+                    addresses1 = geocoder.getFromLocation(gpsTracker.getLatitude(), gpsTracker.getLongitude(), 1);
+                    address = addresses1.get(0).getAddressLine(0);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                requestParams.put("address", address);
+                requestParams.put("lat", gpsTracker.getLatitude() + "");
+                requestParams.put("lng", gpsTracker.getLongitude() + "");
+                requestParams.put("msg", edtMessage.getText().toString().trim());
+                try {
+                    requestParams.put("image", file1);
+                    Log.d("image_path", image_path);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                ApiManager apiManager = new ApiManager((Activity) getContext(), "post", ApiManager.API_PANIC_REPORT, requestParams, apiCallback);
+                apiManager.loadURLPanicBuzz();
+
+                alertDialog.dismiss();
             }
         });
         alertDialog.show();
@@ -330,32 +356,6 @@ public class FragmentHome extends Fragment implements ApiCallback {
         }
     }
 
-    /*  @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == CUSTOM_REQUEST_CODE && resultCode == Activity.RESULT_OK && data != null) {
-            ArrayList<Uri> dataList = data.getParcelableArrayListExtra(FilePickerConst.KEY_SELECTED_MEDIA);
-            if (dataList != null) {
-                photoPaths = new ArrayList<Uri>();
-                photoPaths.addAll(dataList);
-                try {
-                    image_path = ContentUriUtils.INSTANCE.getFilePath(getContext(), photoPaths.get(0));
-                    if (image_path != null) {
-                        op = new File(image_path);
-                        File file = new File(image_path);
-                        Picasso.get().load(file).into(imageSelected);
-                        btnCaptureImage.setVisibility(View.GONE);
-                        imageSelected.setVisibility(View.VISIBLE);
-                        System.out.println("-- file path " + op.getAbsolutePath());
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }*/
-
     public void open() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         startActivityForResult(intent, 123);
@@ -365,7 +365,7 @@ public class FragmentHome extends Fragment implements ApiCallback {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == 123 && data != null) {
-            Toast.makeText(getContext(), "" + data.getExtras().get("data"), Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getContext(), "" + data.getExtras().get("data"), Toast.LENGTH_SHORT).show();
             openDialog();
 
             Bitmap photo = (Bitmap) data.getExtras().get("data");
@@ -413,40 +413,15 @@ public class FragmentHome extends Fragment implements ApiCallback {
     private void checkPermission2() {
         Dexter.withContext(getContext())
                 .withPermissions(Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE)
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.CAMERA,
+                        Manifest.permission.READ_EXTERNAL_STORAGE)
                 .withListener(new MultiplePermissionsListener() {
                     @Override
                     public void onPermissionsChecked(MultiplePermissionsReport multiplePermissionsReport) {
                         if (multiplePermissionsReport.areAllPermissionsGranted()) {
-                            RequestParams requestParams = new RequestParams();
-
-                            try {
-                                gpsTracker = new GPSTracker(getContext());
-                                Geocoder geocoder = new Geocoder(getContext(), Locale.getDefault());
-                                List<Address> addresses1 = null;
-                                addresses1 = geocoder.getFromLocation(gpsTracker.getLatitude(), gpsTracker.getLongitude(), 1);
-                                address = addresses1.get(0).getAddressLine(0);
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-
-                            requestParams.put("address", address);
-                            requestParams.put("lat", gpsTracker.getLatitude() + "");
-                            requestParams.put("lng", gpsTracker.getLongitude() + "");
-                            requestParams.put("msg", edtMessage.getText().toString().trim());
-                            try {
-                                File file = new File(image_path);
-                                requestParams.put("image", file1);
-                                Log.d("image_path", image_path);
-                            } catch (FileNotFoundException e) {
-                                e.printStackTrace();
-                            }
-                            ApiManager apiManager = new ApiManager((Activity) getContext(), "post", ApiManager.API_PANIC_REPORT, requestParams, apiCallback);
-                            apiManager.loadURLPanicBuzz();
-                            alertDialog.dismiss();
-                        } /*else {
-                            gpsTracker.enableLocationPopup();
-                        }*/
+                            open();
+                        }
                     }
 
                     @Override
@@ -459,7 +434,9 @@ public class FragmentHome extends Fragment implements ApiCallback {
     private void checkPermission() {
         Dexter.withContext(getContext())
                 .withPermissions(Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE)
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.CAMERA,
+                        Manifest.permission.READ_EXTERNAL_STORAGE)
                 .withListener(new MultiplePermissionsListener() {
                     @Override
                     public void onPermissionsChecked(MultiplePermissionsReport multiplePermissionsReport) {

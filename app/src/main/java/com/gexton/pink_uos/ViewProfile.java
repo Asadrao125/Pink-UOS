@@ -82,7 +82,7 @@ public class ViewProfile extends AppCompatActivity {
         String mobile = prefs.getString("mobile_no", "");
         String image_url = prefs.getString("image_url", "");
 
-        Picasso.get().load(image_url).into(profileImage);
+        Picasso.get().load(image_url).placeholder(R.drawable.placeholder).into(profileImage);
         tvFirstName.setText(first_name);
         tvLastName.setText(last_name);
         tvPhone.setText(mobile);

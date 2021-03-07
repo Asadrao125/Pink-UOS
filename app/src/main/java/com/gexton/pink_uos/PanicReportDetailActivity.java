@@ -127,9 +127,9 @@ public class PanicReportDetailActivity extends AppCompatActivity implements ApiC
 
             tvUsername.setText(first_name + " " + last_name);
             //picasso user
-            Picasso.get().load(imageUserUrl).placeholder(R.drawable.ic_launcher_background).into(imageUser);
+            Picasso.get().load(imageUserUrl).placeholder(R.drawable.placeholder).into(imageUser);
             //picasso report
-            Picasso.get().load(imageReportUrl).placeholder(R.drawable.ic_launcher_background).into(imageReport);
+            Picasso.get().load(imageReportUrl).placeholder(R.mipmap.ic_launcher).into(imageReport);
             reportMessage.setText(msg);
             createdAt.setText(commentDate);
             reportLocation.setText(address);
