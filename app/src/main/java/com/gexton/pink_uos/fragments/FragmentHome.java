@@ -155,16 +155,16 @@ public class FragmentHome extends Fragment implements ApiCallback {
         AudioManager am = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
         am.setStreamVolume(AudioManager.STREAM_MUSIC, am.getStreamMaxVolume(AudioManager.STREAM_MUSIC), 0);
 
-        /*imgReport.setOnClickListener(new View.OnClickListener() {
+        imgReport.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (apply_limits.equals("false")) {
                     Log.d("apply_limits", "apply_limits: " + apply_limits);
-                    openDialog();
+                    checkPermission2();
                 } else {
                     if (gpsTracker.canGetLocation()) {
                         if (distance < 35000) {
-                            openDialog();
+                            checkPermission2();
                         } else {
                             Toast.makeText(getContext(), "You are not in the premisis of university.", Toast.LENGTH_SHORT).show();
                         }
@@ -173,7 +173,7 @@ public class FragmentHome extends Fragment implements ApiCallback {
                     }
                 }
             }
-        });*/
+        });
 
         imgPlay.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -196,12 +196,12 @@ public class FragmentHome extends Fragment implements ApiCallback {
             }
         });
 
-        imgReport.setOnClickListener(new View.OnClickListener() {
+       /*imgReport.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 checkPermission2();
             }
-        });
+        });*/
 
         return view;
     }
