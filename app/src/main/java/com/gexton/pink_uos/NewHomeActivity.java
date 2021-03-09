@@ -15,6 +15,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -22,6 +23,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.gexton.pink_uos.api.ApiCallback;
@@ -53,6 +55,7 @@ public class NewHomeActivity extends AppCompatActivity implements NavigationView
     SharedPreferences.Editor editor;
     GPSTracker gpsTracker;
     ApiCallback apiCallback;
+    RelativeLayout contentFrame;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,35 +63,40 @@ public class NewHomeActivity extends AppCompatActivity implements NavigationView
         setContentView(R.layout.activity_new_home);
 
         dl = (DrawerLayout) findViewById(R.id.activity_main);
-        toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        toolbar.setNavigationIcon(R.drawable.menu);
         prefs = getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
         navigationView = (NavigationView) findViewById(R.id.nv);
         navigationView.setNavigationItemSelectedListener(this);
         editor = getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE).edit();
         gpsTracker = new GPSTracker(this);
         apiCallback = NewHomeActivity.this;
+        contentFrame = findViewById(R.id.contentFrame);
 
         t = new ActionBarDrawerToggle(this, dl, toolbar, R.string.Open, R.string.Close) {
             @Override
             public void onDrawerSlide(View drawerView, float slideOffset) {
                 super.onDrawerSlide(drawerView, slideOffset);
-               /* if (!lang.equalsIgnoreCase("en") && !lang.equalsIgnoreCase("si")) {
-                    contentFrame.setTranslationX(-slideOffset * drawerView.getWidth());
-                    dl.bringChildToFront(drawerView);
-                    dl.requestLayout();
-                } else {
-                    contentFrame.setTranslationX(slideOffset * drawerView.getWidth());
-                    dl.bringChildToFront(drawerView);
-                    dl.requestLayout();
-                }*/
+                contentFrame.setTranslationX(slideOffset * drawerView.getWidth());
+                dl.bringChildToFront(drawerView);
+                dl.requestLayout();
             }
         };
+        dl.addDrawerListener(t);
+        t.syncState();
+        toolbar = findViewById(R.id.toolbar);
+
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        toolbar.setNavigationIcon(R.drawable.menu);
 
         replaceFragment(new FragmentHome());
         navigationView.getMenu().getItem(0).setChecked(true);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (t.onOptionsItemSelected(item))
+            return true;
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -113,16 +121,6 @@ public class NewHomeActivity extends AppCompatActivity implements NavigationView
             ft.commit();
         }
     }
-
-     /* private void checkUser() {
-        checkPermission();
-        int is_student = prefs.getInt("panenl_value", 10000);
-        if (is_student == 0) {
-            //imgBell.setVisibility(View.VISIBLE);
-        } else {
-            //imgBell.setVisibility(View.GONE);
-        }
-    }*/
 
     @Override
     protected void onStart() {
@@ -167,17 +165,12 @@ public class NewHomeActivity extends AppCompatActivity implements NavigationView
     }
 
     public void shareIntent() {
-        try {
-            Intent shareIntent = new Intent(Intent.ACTION_SEND);
-            shareIntent.setType("text/plain");
-            shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Extra Subject");
-            String shareMessage = "Let me recommend you Pink Safety application ";
-            shareMessage = shareMessage + "Playstore Url";
-            shareIntent.putExtra(Intent.EXTRA_TEXT, shareMessage);
-            startActivity(Intent.createChooser(shareIntent, ""));
-        } catch (Exception e) {
-            e.toString();
-        }
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_TEXT,
+                "Let me recommed you Pink Safety application\nhttps://play.google.com/store/apps/details?id=" + BuildConfig.APPLICATION_ID);
+        sendIntent.setType("text/plain");
+        startActivity(sendIntent);
     }
 
     private void checkPermission() {
